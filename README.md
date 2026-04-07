@@ -44,14 +44,31 @@ EXE201/
 
 ### SQL Server bằng Docker (tuỳ chọn)
 
+**Lưu ý:** SQL trên Windows (`LAPTOP-...\VINH`, `sa` / `12345`) và SQL trong **Docker** là **hai máy chủ khác nhau**. Ảnh SQL Server trong Docker Desktop chỉ nghĩa bạn đã **tải image**; dự án **chưa** dùng Docker cho đến khi bạn bật container và đổi chuỗi kết nối (hoặc chạy profile **Docker**).
+
+- **Tên database** trên cả hai kiểu đều có thể là **`YumegojiDB`** (đã dùng trong script gộp) — không cần “rút gọn” thêm; tên container hiện tại là `yumegoji-sql`.
+- Mật khẩu **`sa` trong Docker** lấy theo `docker-compose.yml` (mặc định `Yumegoji_Sql_2024!`) hoặc file `.env` (`MSSQL_SA_PASSWORD=...`). Image SQL Server Linux **thường không chấp nhận** mật khẩu quá yếu kiểu `12345` — hãy dùng mật khẩu mạnh (chữ hoa, thường, số, ký tự đặc biệt).
+
 Tại thư mục gốc dự án:
 
 ```bash
 docker compose up -d
 ```
 
-- Kết nối: **`localhost,14333`** (user `sa`, mật khẩu theo `docker-compose.yml` hoặc biến `MSSQL_SA_PASSWORD` trong file `.env`).
-- Sau đó chạy script SQL như trên và cập nhật `DefaultConnection` cho khớp (`Server=localhost,14333;...`).
+Đợi 20–40 giây. Trong Docker Desktop → **Containers** phải thấy container **Running** (không chỉ tab Images).
+
+1. Mở **SSMS**, kết nối: **Server** `localhost,14333`, **SQL Auth**, user `sa`, mật khẩu trùng `docker-compose` / `.env`.
+2. Chạy `backend/doc/sql/YumegojiDB-AllScripts.sql` (tạo database **YumegojiDB** + schema).
+3. Chạy API trỏ vào Docker: dùng file **`backend/appsettings.Docker.json`** (đã có sẵn chuỗi `localhost,14333` + **YumegojiDB**):
+
+   ```bash
+   cd backend
+   dotnet run --launch-profile Docker
+   ```
+
+   Hoặc đặt biến môi trường `ASPNETCORE_ENVIRONMENT=Docker` rồi `dotnet run`. Khi đó .NET gộp `appsettings.json` + `appsettings.Docker.json` (ghi đè `ConnectionStrings`).
+
+Nếu đổi `MSSQL_SA_PASSWORD` trong `.env`, sửa cùng mật khẩu trong `appsettings.Docker.json`.
 
 ## 2. Chạy backend (API)
 
