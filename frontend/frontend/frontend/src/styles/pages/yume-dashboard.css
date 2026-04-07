@@ -1,0 +1,1792 @@
+/* Dashboard kiểu YumeGo-ji (bản sơ, chỉnh sau) */
+.yume-dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.25rem 1.25rem 3rem;
+  position: relative;
+}
+
+.yume-dashboard__hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.yume-dashboard__greet {
+  margin: 0 0 0.35rem;
+  font-size: clamp(1.35rem, 3vw, 1.85rem);
+  font-weight: 800;
+  color: var(--text-h);
+  letter-spacing: -0.02em;
+}
+
+.yume-dashboard__sub {
+  margin: 0;
+  color: var(--text);
+  opacity: 0.88;
+  font-size: 0.98rem;
+}
+
+.yume-dashboard__banner-error {
+  margin: 0 0 1rem;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  background: color-mix(in srgb, #ef4444 12%, transparent);
+  border: 1px solid color-mix(in srgb, #ef4444 35%, transparent);
+  color: var(--text-h);
+  font-size: 0.9rem;
+}
+
+.yume-dashboard__rank-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+
+.yume-dashboard__rank-icon {
+  font-size: 1.35rem;
+}
+
+.yume-dashboard__rank-level {
+  font-weight: 800;
+  font-size: 0.92rem;
+  color: var(--text-h);
+}
+
+.yume-dashboard__rank-name {
+  font-size: 0.78rem;
+  color: var(--text);
+  opacity: 0.8;
+  margin-top: 0.1rem;
+}
+
+.yume-dashboard__stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 900px) {
+  .yume-dashboard__stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .yume-dashboard__stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+.yume-stat-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem 1.1rem;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+}
+
+.yume-stat-card__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  margin-bottom: 0.65rem;
+}
+
+.yume-stat-card__icon--star {
+  background: rgba(250, 204, 21, 0.2);
+}
+.yume-stat-card__icon--cal {
+  background: rgba(249, 115, 22, 0.15);
+}
+.yume-stat-card__icon--xp {
+  background: rgba(139, 92, 246, 0.15);
+}
+.yume-stat-card__icon--lesson {
+  background: rgba(16, 185, 129, 0.15);
+}
+
+.yume-stat-card__label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text);
+  opacity: 0.85;
+  margin-bottom: 0.25rem;
+}
+
+.yume-stat-card__value {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-h);
+}
+
+.yume-stat-card__hint {
+  font-size: 0.8rem;
+  color: var(--text);
+  opacity: 0.75;
+  margin-top: 0.2rem;
+}
+
+.yume-dashboard__rank-bar {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow);
+}
+
+.yume-rank-bar__head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.yume-rank-bar__title {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--text-h);
+}
+
+.yume-rank-bar__target {
+  font-size: 0.82rem;
+  color: var(--text);
+  opacity: 0.85;
+}
+
+.yume-rank-bar__track {
+  height: 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--border) 80%, transparent);
+  overflow: hidden;
+}
+
+.yume-rank-bar__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #2563eb, #3b82f6);
+}
+
+.yume-rank-bar__foot {
+  margin: 0.5rem 0 0;
+  font-size: 0.82rem;
+  color: var(--text);
+  opacity: 0.8;
+}
+
+.yume-dashboard__grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .yume-dashboard__grid2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.yume-panel {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.15rem 1.25rem 1.25rem;
+  box-shadow: var(--shadow);
+}
+
+.yume-panel__title {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-h);
+}
+
+.yume-panel__sub {
+  margin: 0 0 1rem;
+  font-size: 0.86rem;
+  color: var(--text);
+  opacity: 0.85;
+}
+
+/* --- Gói Premium: huy hiệu + viền (Account / Dashboard / nav) --- */
+.yume-premium-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.22rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #78350f;
+  background: linear-gradient(135deg, #fef3c7, #fde68a 42%, #fbbf24);
+  border: 1px solid color-mix(in srgb, #d97706 50%, transparent);
+  box-shadow: 0 2px 10px color-mix(in srgb, #f59e0b 22%, transparent);
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+html[data-theme='dark'] .yume-premium-badge {
+  color: #fffbeb;
+  background: linear-gradient(135deg, #713f12, #92400e 45%, #b45309);
+  border-color: color-mix(in srgb, #fcd34d 40%, transparent);
+  box-shadow: 0 2px 14px color-mix(in srgb, #f59e0b 18%, transparent);
+}
+
+.yume-premium-badge--lg {
+  font-size: 0.8rem;
+  padding: 0.32rem 0.78rem;
+  letter-spacing: 0.08em;
+}
+
+.yume-premium-badge--nav {
+  font-size: 0.62rem;
+  padding: 0.1rem 0.38rem;
+  letter-spacing: 0.05em;
+}
+
+.yume-premium-badge__icon {
+  font-size: 1.05em;
+  line-height: 1;
+}
+
+.yume-premium-badge__text {
+  line-height: 1;
+}
+
+.yume-panel--premium {
+  position: relative;
+  overflow: hidden;
+  border: 2px solid color-mix(in srgb, #f59e0b 50%, var(--border));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, #fbbf24 25%, transparent),
+    var(--shadow);
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--bg) 90%, #fef3c7 10%) 0%,
+    var(--bg) 55%
+  );
+}
+
+.yume-panel--premium::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #d97706, #fbbf24, #f59e0b, #fbbf24);
+  border-radius: 14px 14px 0 0;
+}
+
+.yume-panel__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.yume-panel__title-row .yume-panel__title {
+  margin: 0;
+}
+
+.yume-panel--premium .yume-panel__sub {
+  position: relative;
+  z-index: 1;
+}
+
+.yume-panel--premium .yume-account__info-list,
+.yume-panel--premium .yume-account__avatar-row {
+  position: relative;
+  z-index: 1;
+}
+
+.yume-dashboard__greet-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.65rem;
+}
+
+.yume-dashboard__premium-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0 0;
+  padding: 0.45rem 0.65rem;
+  border-radius: 12px;
+  background: color-mix(in srgb, #fef3c7 35%, var(--bg));
+  border: 1px solid color-mix(in srgb, #f59e0b 35%, var(--border));
+  font-size: 0.82rem;
+  color: var(--text-h);
+}
+
+html[data-theme='dark'] .yume-dashboard__premium-strip {
+  background: color-mix(in srgb, #78350f 28%, var(--bg));
+  border-color: color-mix(in srgb, #fbbf24 25%, var(--border));
+}
+
+.yume-dashboard__premium-strip-hint {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 0.8rem;
+  color: var(--text);
+}
+
+.yume-dashboard__rank-badge--premium {
+  border: 2px solid color-mix(in srgb, #f59e0b 55%, var(--border));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, #fbbf24 20%, transparent),
+    var(--shadow);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--bg) 88%, #fef3c7 12%),
+    var(--bg)
+  );
+}
+
+.yume-dashboard__account-hero-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  width: 100%;
+}
+
+.yume-dashboard__account-hero-row .yume-dashboard__hero-text {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Account: khung avatar Premium */
+.yume-account__avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.yume-account__avatar-wrap {
+  flex-shrink: 0;
+  padding: 4px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.yume-account__avatar-wrap--premium {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b 40%, #d97706);
+  box-shadow: 0 4px 18px color-mix(in srgb, #f59e0b 28%, transparent);
+}
+
+.yume-account__avatar-inner {
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.4rem;
+  overflow: hidden;
+}
+
+html[data-theme='dark'] .yume-account__avatar-inner {
+  background: color-mix(in srgb, var(--bg) 75%, #0f172a);
+}
+
+.yume-account__avatar-inner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.yume-progress-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.yume-progress-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 48px;
+  grid-template-rows: auto auto;
+  gap: 0.35rem 0.75rem;
+  align-items: center;
+}
+
+.yume-progress-list li > span:first-child {
+  grid-column: 1 / -1;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.yume-progress-track {
+  grid-column: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--border) 70%, transparent);
+  overflow: hidden;
+}
+
+.yume-progress-track__fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+
+.yume-progress-track__fill--teal {
+  background: linear-gradient(90deg, #14b8a6, #2dd4bf);
+}
+.yume-progress-track__fill--blue {
+  background: linear-gradient(90deg, #2563eb, #60a5fa);
+}
+.yume-progress-track__fill--purple {
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+}
+
+.yume-progress-pct {
+  grid-column: 2;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--text);
+  text-align: right;
+}
+
+.yume-panel__locked {
+  margin: 1rem 0 0;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.82rem;
+  color: var(--text);
+  opacity: 0.8;
+}
+
+.yume-quick-list {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+}
+
+.yume-quick-list li {
+  border-bottom: 1px solid var(--border);
+}
+
+.yume-quick-list li:last-child {
+  border-bottom: none;
+}
+
+.yume-quick-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  text-decoration: none;
+  color: var(--text-h);
+  font-weight: 600;
+  font-size: 0.92rem;
+  transition: color 0.15s;
+}
+
+.yume-quick-row:hover {
+  color: #2563eb;
+}
+
+.yume-quick-row__arrow {
+  opacity: 0.45;
+  font-weight: 400;
+}
+
+.yume-chat-rooms__title {
+  margin: 0 0 0.65rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.yume-chat-rooms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.yume-pill {
+  display: inline-flex;
+  padding: 0.45rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, #2563eb 6%, var(--bg));
+  color: #1d4ed8;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+html[data-theme='dark'] .yume-pill {
+  color: #93c5fd;
+}
+
+.yume-pill:hover {
+  border-color: color-mix(in srgb, #2563eb 40%, var(--border));
+  background: color-mix(in srgb, #2563eb 12%, var(--bg));
+}
+
+.yume-fab-wrap {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  pointer-events: none;
+}
+
+.yume-fab-wrap .yume-fab {
+  pointer-events: auto;
+}
+
+.yume-fab {
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: #fff;
+  font-size: 1.35rem;
+  cursor: pointer;
+  box-shadow: 0 10px 28px rgba(124, 58, 237, 0.35);
+}
+
+.yume-fab__hint {
+  pointer-events: none;
+  max-width: 200px;
+  padding: 0.45rem 0.75rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-h);
+  box-shadow: var(--shadow);
+}
+
+@media (max-width: 600px) {
+  .yume-fab__hint {
+    display: none;
+  }
+}
+
+/* Account page info list */
+.yume-account__info-list {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 1.25rem;
+}
+
+.yume-account__info-list div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.yume-account__info-list dt {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text);
+  opacity: 0.75;
+}
+
+.yume-account__info-list dd {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-h);
+}
+
+@media (max-width: 700px) {
+  .yume-account__info-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+.yume-account__post-form {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.yume-account__post-form textarea,
+.yume-account__post-form input[type='text'] {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 0.6rem 0.75rem;
+  font-size: 0.9rem;
+  background: #ffffff;
+  color: var(--text-h);
+}
+
+.yume-account__post-form textarea {
+  resize: vertical;
+  min-height: 72px;
+}
+
+.yume-account__post-image {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.yume-account__post-image-preview {
+  margin-top: 0.25rem;
+  max-height: 220px;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #000;
+}
+
+.yume-account__posts-scroll {
+  max-height: calc(100vh - 260px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.yume-account__posts-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.yume-account__posts-scroll::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--border) 70%, transparent);
+  border-radius: 999px;
+}
+
+.yume-account__layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* --- Trang Account: layout kiểu cover + stats + composer (mẫu social profile) --- */
+.yume-dashboard.yume-account-page {
+  max-width: 720px;
+}
+
+.yume-account-profile {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  margin-bottom: 1.25rem;
+}
+
+.yume-account-profile--premium {
+  border: 2px solid color-mix(in srgb, #f59e0b 48%, var(--border));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, #fbbf24 22%, transparent),
+    0 12px 40px color-mix(in srgb, #f59e0b 12%, transparent),
+    var(--shadow);
+}
+
+.yume-account-profile__cover {
+  position: relative;
+  height: clamp(152px, 32vw, 216px);
+  background: linear-gradient(
+      135deg,
+      color-mix(in srgb, #fda4af 35%, #1e293b) 0%,
+      color-mix(in srgb, #7dd3fc 25%, #0f172a) 45%,
+      color-mix(in srgb, #f9a8d4 30%, #1e1b4b) 100%
+    ),
+    radial-gradient(ellipse 80% 60% at 20% 40%, rgba(252, 231, 243, 0.35), transparent),
+    radial-gradient(ellipse 60% 50% at 80% 70%, rgba(125, 211, 252, 0.25), transparent);
+}
+
+.yume-account-profile__cover-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.yume-account-profile__cover-toolbar {
+  position: absolute;
+  right: 0.65rem;
+  bottom: 0.65rem;
+  left: 0.65rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.45rem;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.yume-account-profile__cover-toolbar > * {
+  pointer-events: auto;
+}
+
+.yume-account-profile__cover-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.38rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid color-mix(in srgb, #fff 55%, transparent);
+  background: color-mix(in srgb, #0f172a 45%, transparent);
+  color: #f8fafc;
+  backdrop-filter: blur(8px);
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.yume-account-profile__cover-btn:hover:not(.yume-account-profile__cover-btn--disabled) {
+  background: color-mix(in srgb, #0f172a 62%, transparent);
+  border-color: color-mix(in srgb, #fff 70%, transparent);
+}
+
+.yume-account-profile__cover-btn--ghost {
+  background: color-mix(in srgb, #fff 18%, transparent);
+  color: #0f172a;
+  border-color: color-mix(in srgb, #fff 65%, transparent);
+}
+
+html[data-theme='dark'] .yume-account-profile__cover-btn--ghost {
+  color: #f1f5f9;
+  background: color-mix(in srgb, #fff 12%, transparent);
+  border-color: color-mix(in srgb, #fff 35%, transparent);
+}
+
+.yume-account-profile__cover-btn--disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.yume-account-profile__cover-err {
+  position: absolute;
+  left: 0.65rem;
+  right: 0.65rem;
+  bottom: 3.1rem;
+  margin: 0;
+  padding: 0.35rem 0.55rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fef2f2;
+  background: color-mix(in srgb, #dc2626 88%, transparent);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.yume-account-profile__body {
+  position: relative;
+  padding: 0 1.25rem 1.35rem;
+}
+
+.yume-account-profile__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1.15rem 1.5rem;
+  /* Chồng một nửa avatar lên bìa — ít hơn trước để bớt cảm giác chật */
+  margin-top: -42px;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+@media (max-width: 540px) {
+  .yume-account-profile__head {
+    flex-direction: column;
+    align-items: center;
+    margin-top: -56px;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .yume-account-profile__avatar-col {
+    align-items: center;
+  }
+
+  .yume-account-profile__meta {
+    width: 100%;
+    min-width: 0;
+    text-align: center;
+    padding-top: 0.35rem;
+  }
+
+  .yume-account-profile__name-row {
+    justify-content: center;
+  }
+}
+
+.yume-account-profile__avatar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.55rem;
+}
+
+.yume-account-profile__avatar-ring {
+  flex-shrink: 0;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--bg);
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.12);
+}
+
+.yume-account-profile__avatar-ring--premium {
+  padding: 5px;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b 45%, #d97706);
+  box-shadow: 0 10px 32px color-mix(in srgb, #f59e0b 35%, transparent);
+}
+
+.yume-account-profile__avatar-face {
+  width: 96px;
+  height: 96px;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.75rem;
+  overflow: hidden;
+}
+
+html[data-theme='dark'] .yume-account-profile__avatar-face {
+  background: color-mix(in srgb, var(--bg) 70%, #0f172a);
+}
+
+.yume-account-profile__avatar-face img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.yume-account-profile__avatar-btn {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-primary, #e11d48);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  margin-top: 0.15rem;
+  padding: 0.15rem 0;
+}
+
+.yume-account-profile__avatar-btn:hover {
+  color: var(--color-primary-hover, #be123c);
+}
+
+.yume-account-profile__avatar-err {
+  margin: 0;
+  font-size: 0.72rem;
+  color: #ef4444;
+}
+
+.yume-account-profile__visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.yume-account-profile__meta {
+  flex: 1;
+  min-width: min(100%, 220px);
+  /* Căn theo đầu hàng (flex-start) + lề trên để tên/badge không dính bìa */
+  padding-top: 0.85rem;
+}
+
+.yume-account-profile__name-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1rem;
+}
+
+.yume-account-profile__name {
+  margin: 0;
+  font-size: clamp(1.35rem, 4vw, 1.75rem);
+  font-weight: 800;
+  color: var(--text-h);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  padding-right: 0.15rem;
+}
+
+.yume-account-profile__tagline {
+  margin: 0.55rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--text);
+  opacity: 0.88;
+}
+
+.yume-account-profile__tag-premium {
+  font-weight: 800;
+  color: color-mix(in srgb, #d97706 85%, var(--text-h));
+}
+
+html[data-theme='dark'] .yume-account-profile__tag-premium {
+  color: #fcd34d;
+}
+
+.yume-account-profile__details {
+  margin-top: 1.1rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--border) 12%, var(--bg));
+  padding: 0.55rem 0.85rem;
+}
+
+.yume-account-profile__details summary {
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-h);
+  list-style: none;
+  padding: 0.2rem 0;
+}
+
+.yume-account-profile__details summary::-webkit-details-marker {
+  display: none;
+}
+
+.yume-account-profile__dl {
+  margin: 0.65rem 0 0.25rem;
+  display: grid;
+  gap: 0.5rem 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+}
+
+.yume-account-profile__dl dt {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text);
+  opacity: 0.75;
+}
+
+.yume-account-profile__dl dd {
+  margin: 0.1rem 0 0;
+  font-size: 0.86rem;
+  color: var(--text-h);
+  word-break: break-word;
+}
+
+.yume-account-profile__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1.35rem;
+}
+
+@media (max-width: 560px) {
+  .yume-account-profile__stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+.yume-account-stat-card {
+  background: color-mix(in srgb, var(--border) 8%, var(--bg));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.75rem 0.85rem;
+}
+
+.yume-account-stat-card__label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  opacity: 0.75;
+}
+
+.yume-account-stat-card__value {
+  margin: 0.2rem 0 0.45rem;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--text-h);
+}
+
+.yume-account-stat-card__bar {
+  height: 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--border) 75%, transparent);
+  overflow: hidden;
+}
+
+.yume-account-stat-card__bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-primary, #e11d48), #f472b6);
+}
+
+.yume-account-stat-card__hint {
+  margin: 0.4rem 0 0;
+  font-size: 0.72rem;
+  color: var(--text);
+  opacity: 0.8;
+  line-height: 1.35;
+}
+
+.yume-account-composer {
+  margin-bottom: 1.25rem;
+}
+
+.yume-account-composer__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.yume-account-composer__row {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+}
+
+.yume-account-composer__mini-avatar {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.yume-account-composer__mini-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+html[data-theme='dark'] .yume-account-composer__mini-avatar {
+  background: color-mix(in srgb, var(--bg) 65%, #0f172a);
+}
+
+.yume-account-composer__textarea {
+  flex: 1;
+  min-width: 0;
+  min-height: 88px;
+  resize: vertical;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  padding: 0.65rem 0.85rem;
+  font-size: 0.92rem;
+  background: var(--bg);
+  color: var(--text-h);
+  font-family: inherit;
+}
+
+.yume-account-composer__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-left: calc(44px + 0.65rem);
+}
+
+@media (max-width: 480px) {
+  .yume-account-composer__toolbar {
+    padding-left: 0;
+  }
+}
+
+.yume-account-composer__emojis {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.yume-account-composer__emoji {
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  padding: 0.15rem 0.45rem;
+  font-size: 1.1rem;
+  line-height: 1.4;
+  background: var(--bg);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.yume-account-composer__emoji:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 40%, var(--border));
+  background: color-mix(in srgb, var(--color-primary) 6%, var(--bg));
+}
+
+.yume-account-composer__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.yume-account-composer__link {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-primary, #e11d48);
+  cursor: pointer;
+}
+
+.yume-account-composer__link:hover {
+  text-decoration: underline;
+}
+
+.yume-account-composer__submit {
+  border: none;
+  border-radius: 999px;
+  padding: 0.45rem 1.15rem;
+  font-size: 0.88rem;
+  font-weight: 800;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(135deg, var(--color-primary, #e11d48), #ec4899);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-primary, #e11d48) 35%, transparent);
+  transition: transform 0.12s, box-shadow 0.12s, opacity 0.12s;
+}
+
+.yume-account-composer__submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--color-primary, #e11d48) 45%, transparent);
+}
+
+.yume-account-composer__submit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.yume-account-composer__preview {
+  margin-left: calc(44px + 0.65rem);
+  max-height: 220px;
+  width: calc(100% - 44px - 0.65rem);
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+@media (max-width: 480px) {
+  .yume-account-composer__preview {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+.yume-account-feed__title {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-h);
+}
+
+.yume-account-feed__error {
+  margin: 0 0 0.75rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  background: color-mix(in srgb, #ef4444 12%, transparent);
+  color: #b91c1c;
+  font-size: 0.88rem;
+}
+
+html[data-theme='dark'] .yume-account-feed__error {
+  color: #fca5a5;
+}
+
+.yume-account-feed__empty {
+  margin: 0;
+  padding: 1rem 0;
+  text-align: center;
+  color: var(--text);
+  opacity: 0.85;
+  font-size: 0.9rem;
+}
+
+.yume-account__posts-scroll--feed {
+  max-height: none;
+  overflow: visible;
+  padding-right: 0;
+}
+
+.yume-account-post-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.yume-account-post-card {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem 1.05rem;
+  background: var(--bg);
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
+}
+
+.yume-account-post-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.yume-account-post-card__author {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.yume-account-post-card__author-av {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.yume-account-post-card__author-av img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.yume-account-post-card__author-name {
+  font-weight: 800;
+  font-size: 0.92rem;
+  color: var(--text-h);
+}
+
+.yume-account-post-card__time {
+  font-size: 0.75rem;
+  color: var(--text);
+  opacity: 0.75;
+  margin-top: 0.1rem;
+}
+
+.yume-account-post-card__delete {
+  border: none;
+  background: transparent;
+  color: #ef4444;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.yume-account-post-card__text {
+  margin: 0 0 0.55rem;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--text-h);
+}
+
+.yume-account-post-card__media {
+  width: 100%;
+  max-height: 320px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 0.35rem;
+}
+
+html[data-theme='dark'] .yume-account__post-reaction-main {
+  background: color-mix(in srgb, var(--bg) 88%, #334155);
+  color: var(--text-h);
+}
+
+html[data-theme='dark'] .yume-account__post-reaction {
+  background: color-mix(in srgb, var(--bg) 88%, #334155);
+}
+
+.yume-account__post-reactions {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 0.5rem;
+}
+
+.yume-account__post-reaction-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background-color: #ffffff;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  transition: background-color 0.1s ease, transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.yume-account__post-reaction-main:hover {
+  background-color: color-mix(in srgb, #f97316 10%, #ffffff);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.18);
+  transform: translateY(-1px);
+}
+
+.yume-account__post-reaction-main--active {
+  border-color: #ef4444;
+  background-color: color-mix(in srgb, #ef4444 10%, #ffffff);
+  color: #b91c1c;
+}
+
+.yume-account__post-reaction-main-emoji {
+  font-size: 18px;
+}
+
+.yume-account__post-reaction-main-label {
+  font-size: 0.8rem;
+}
+
+.yume-account__post-reaction-picker {
+  position: absolute;
+  left: 0;
+  bottom: 110%;
+  display: flex;
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: 999px;
+  background-color: #ffffff;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  z-index: 5;
+}
+
+.yume-account__post-reactions:hover .yume-account__post-reaction-picker {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.yume-account__post-reaction {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  transition: transform 0.1s ease, filter 0.1s ease, background-color 0.1s ease;
+}
+
+.yume-account__post-reaction:hover {
+  transform: translateY(-1px) scale(1.05);
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.15));
+}
+
+.yume-account__post-reaction--active {
+  transform: translateY(-1px) scale(1.1);
+  background-color: rgba(239, 68, 68, 0.06);
+}
+
+.yume-account__post-reaction-emoji {
+  display: inline-block;
+}
+
+.yume-account__post-reaction-count {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border-radius: 999px;
+  background-color: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.yume-account__comments {
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  padding-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.yume-account__comment-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.yume-account__comment-list li {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.yume-account__comment-list strong {
+  font-weight: 600;
+}
+
+.yume-account__comment-list span {
+  flex: 1;
+}
+
+.yume-account__comment-form {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.yume-account__comment-form input[type='text'] {
+  flex: 1;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+.yume-account__comment-form button {
+  border-radius: 999px;
+  border: none;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  background: #ef4444;
+  color: #fff;
+  cursor: pointer;
+}
+
+/* Trang Learn / Play dùng chung lớp nền */
+.yume-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 2rem;
+}
+
+.yume-page h1 {
+  margin-top: 0;
+  font-size: 1.5rem;
+}
+
+.app--learner .app-main--learner {
+  flex: 1;
+  min-height: 0;
+  background: color-mix(in srgb, var(--bg) 96%, #f8fafc 4%);
+}
+
+html[data-theme='dark'] .app--learner .app-main--learner {
+  background: var(--bg);
+}
+
+/* --- Hỗ trợ / chatbot (trang chủ + dashboard) --- */
+.support-chat-fab-wrap {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  pointer-events: none;
+}
+
+.support-chat-fab-wrap .support-chat-fab {
+  pointer-events: auto;
+}
+
+.support-chat-fab {
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: #fff;
+  font-size: 1.35rem;
+  cursor: pointer;
+  box-shadow: 0 10px 28px rgba(124, 58, 237, 0.35);
+}
+
+.support-chat-fab__hint {
+  pointer-events: none;
+  max-width: 200px;
+  padding: 0.45rem 0.75rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-h);
+  box-shadow: var(--shadow);
+}
+
+@media (max-width: 600px) {
+  .support-chat-fab__hint {
+    display: none;
+  }
+}
+
+.support-chat-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(15, 23, 42, 0.25);
+}
+
+.support-chat-panel {
+  position: fixed;
+  right: 1rem;
+  bottom: 5.5rem;
+  z-index: 80;
+  width: min(380px, calc(100vw - 2rem));
+  max-height: min(480px, calc(100dvh - 7rem));
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.support-chat-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 92%, #f8fafc 8%);
+}
+
+.support-chat-panel__title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-h);
+}
+
+.support-chat-panel__close {
+  border: none;
+  background: transparent;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text);
+  opacity: 0.7;
+}
+
+.support-chat-panel__error {
+  margin: 0;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.8rem;
+  color: #b91c1c;
+  background: color-mix(in srgb, #ef4444 10%, transparent);
+}
+
+.support-chat-panel__member {
+  padding: 1rem 0.85rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.support-chat-panel__member-bar {
+  flex-shrink: 0;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 88%, #7c3aed 6%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.support-chat-panel__member-bar__text {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.support-chat-panel__member-bar__btn {
+  width: 100%;
+}
+
+.support-chat-panel--member .support-chat-panel__messages {
+  max-height: 200px;
+  min-height: 120px;
+}
+
+.support-chat-panel__desc {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text);
+  line-height: 1.45;
+}
+
+.support-chat-panel__btn {
+  border-radius: 10px;
+  border: none;
+  padding: 0.65rem 1rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.support-chat-panel__btn--primary {
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: #fff;
+}
+
+.support-chat-panel__btn--primary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.support-chat-panel__messages {
+  flex: 1;
+  min-height: 180px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 0.65rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.support-chat-msg {
+  max-width: 92%;
+  padding: 0.45rem 0.65rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.support-chat-msg--bot {
+  align-self: flex-start;
+  background: color-mix(in srgb, var(--border) 35%, var(--bg));
+  color: var(--text-h);
+}
+
+.support-chat-msg--user {
+  align-self: flex-end;
+  background: color-mix(in srgb, #7c3aed 18%, var(--bg));
+  color: var(--text-h);
+}
+
+.support-chat-msg__meta {
+  display: block;
+  font-size: 0.68rem;
+  opacity: 0.65;
+  margin-top: 0.2rem;
+}
+
+.support-chat-panel__form {
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.5rem 0.85rem;
+  border-top: 1px solid var(--border);
+}
+
+.support-chat-panel__form input {
+  flex: 1;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  padding: 0.45rem 0.75rem;
+  font-size: 0.85rem;
+  background: var(--bg);
+  color: var(--text-h);
+}
+
+.support-chat-panel__form button {
+  border-radius: 999px;
+  border: none;
+  padding: 0.45rem 0.9rem;
+  font-weight: 700;
+  font-size: 0.82rem;
+  background: #7c3aed;
+  color: #fff;
+  cursor: pointer;
+}
+
+.support-chat-panel__form button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.support-chat-panel__foot {
+  margin: 0;
+  padding: 0 0.85rem 0.75rem;
+  font-size: 0.72rem;
+  color: var(--text);
+  opacity: 0.8;
+}

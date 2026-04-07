@@ -1,0 +1,29 @@
+CẤU HÌNH OPENAI CHO TÍNH NĂNG "SINH BÀI VỚI AI"
+================================================
+
+Bạn cần 1 khóa API OpenAI (tài khoản: https://platform.openai.com — mục API keys).
+
+Cách 1 — File bí mật cục bộ (đơn giản cho bài tập)
+-------------------------------------------------
+1. Copy file: appsettings.Secrets.example.json
+2. Đổi tên thành: appsettings.Secrets.json  (cùng thư mục với appsettings.json)
+3. Thay chuỗi trong "ApiKey" bằng khóa sk-... thật của bạn.
+4. File appsettings.Secrets.json đã được .gitignore — không commit lên Git.
+
+Cách 2 — User Secrets (Visual Studio)
+-------------------------------------
+Project đã bật User Secrets (UserSecretsId trong .csproj).
+
+Trong thư mục project backend, chạy PowerShell:
+
+  dotnet user-secrets set "OpenAI:ApiKey" "sk-...khóa-của-bạn..."
+
+Hoặc VS: chuột phải project → Manage User Secrets → thêm JSON:
+  "OpenAI": { "ApiKey": "sk-..." }
+
+Cách 3 — Biến môi trường Windows
+--------------------------------
+Đặt biến:  OpenAI__ApiKey  =  sk-...  (hai dấu gạch dưới __)
+
+Lưu ý: BaseUrl và Model mặc định nằm trong appsettings.json (gpt-4o-mini).
+Chỉ cần ApiKey là đủ để gọi được API.

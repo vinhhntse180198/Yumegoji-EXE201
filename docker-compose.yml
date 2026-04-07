@@ -1,0 +1,28 @@
+# SQL Server cho YumegojiDB — chạy cùng Docker Desktop
+# Cổng host 14333 (tránh đụng SQL Server cài sẵn trên Windows thường dùng 1433)
+#
+# Khởi động:  docker compose up -d
+# Tắt:         docker compose down
+# Xem log:     docker compose logs -f sqlserver
+#
+# Sau khi container chạy, tạo DB + schema: mở YumegojiDB-AllScripts.sql trong SSMS
+# kết nối tới localhost,14333 (sa / mật khẩu như biến MSSQL_SA_PASSWORD bên dưới).
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: yumegoji-sql
+    hostname: yumegoji-sql
+    environment:
+      ACCEPT_EULA: "Y"
+      # Đặt trong file .env (cùng thư mục): MSSQL_SA_PASSWORD=MatKhauManh!123
+      # Hoặc dùng mặc định bên dưới (đổi trước khi deploy thật).
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-Yumegoji_Sql_2024!}
+    ports:
+      - "14333:1433"
+    volumes:
+      - yumegoji_mssql_data:/var/opt/mssql
+    # Chờ ~20–40 giây sau "docker compose up" rồi mới kết nối / chạy script SQL
+
+volumes:
+  yumegoji_mssql_data:

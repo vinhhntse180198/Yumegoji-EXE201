@@ -1,0 +1,310 @@
+/* ========== Home page (Sakura Nihongo style) ========== */
+.home {
+  width: 100%;
+}
+
+.sn-container {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  box-sizing: border-box;
+}
+
+.sn-hero {
+  padding: 3rem 0 2.5rem;
+  background:
+    radial-gradient(620px 320px at 25% 15%, rgba(225, 29, 72, 0.14), transparent 70%),
+    radial-gradient(720px 360px at 82% 10%, rgba(251, 113, 133, 0.16), transparent 72%),
+    linear-gradient(180deg, rgba(225, 29, 72, 0.04), transparent 65%);
+}
+
+.sn-hero__grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 2rem;
+  align-items: center;
+}
+@media (max-width: 860px) {
+  .sn-hero__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sn-hero__eyebrow {
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  margin: 0 0 0.75rem;
+}
+
+.sn-hero__title {
+  font-size: clamp(2rem, 4.2vw, 3rem);
+  line-height: 1.15;
+  margin: 0 0 0.75rem;
+  color: var(--text-h);
+}
+
+.sn-hero__accent {
+  color: var(--accent);
+}
+
+.sn-hero__desc {
+  margin: 0 0 1.5rem;
+  color: var(--text);
+  max-width: 520px;
+}
+
+.sn-hero__cta {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.sn-hero__visual {
+  display: flex;
+  justify-content: center;
+}
+
+.sn-visual-card {
+  width: min(560px, 100%);
+  background: color-mix(in srgb, var(--bg) 92%, white 8%);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 1rem;
+  position: relative;
+}
+
+.sn-visual-frame {
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.sn-visual-image {
+  height: 300px;
+  background-image:
+    radial-gradient(18px 18px at 16% 76%, rgba(225, 29, 72, 0.35) 35%, transparent 36%),
+    radial-gradient(14px 14px at 24% 72%, rgba(251, 113, 133, 0.30) 35%, transparent 36%),
+    radial-gradient(16px 16px at 86% 80%, rgba(225, 29, 72, 0.30) 35%, transparent 36%),
+    radial-gradient(14px 14px at 78% 76%, rgba(251, 113, 133, 0.28) 35%, transparent 36%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.35)),
+    url('/hero-japan.png');
+  background-size: auto, auto, auto, auto, cover, cover;
+  background-position: center, center, center, center, center, center;
+  background-repeat: no-repeat;
+}
+
+html[data-theme='dark'] .sn-visual-image {
+  background-image:
+    radial-gradient(18px 18px at 16% 76%, rgba(244, 63, 94, 0.22) 35%, transparent 36%),
+    radial-gradient(14px 14px at 24% 72%, rgba(251, 113, 133, 0.18) 35%, transparent 36%),
+    radial-gradient(16px 16px at 86% 80%, rgba(244, 63, 94, 0.18) 35%, transparent 36%),
+    radial-gradient(14px 14px at 78% 76%, rgba(251, 113, 133, 0.16) 35%, transparent 36%),
+    linear-gradient(180deg, rgba(2, 6, 23, 0.35), rgba(2, 6, 23, 0.55)),
+    url('/hero-japan.png');
+  background-size: auto, auto, auto, auto, cover, cover;
+  background-position: center, center, center, center, center, center;
+  background-repeat: no-repeat;
+}
+
+.sn-visual-float {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0.6rem 0.75rem;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--bg) 88%, white 12%);
+  border: 1px solid var(--border);
+  box-shadow: rgba(0, 0, 0, 0.10) 0 12px 18px -12px;
+}
+
+.sn-visual-float__dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.16);
+  border: 2px solid rgba(34, 197, 94, 0.6);
+}
+.sn-visual-float__label {
+  font-size: 0.75rem;
+  color: var(--text);
+}
+.sn-visual-float__value {
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.sn-section {
+  padding: 3.25rem 0;
+}
+.sn-section--alt {
+  background: rgba(225, 29, 72, 0.03);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.sn-title {
+  text-align: center;
+  margin: 0 0 0.5rem;
+  color: var(--text-h);
+  font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+}
+.sn-subtitle {
+  text-align: center;
+  margin: 0 auto 2.25rem;
+  color: var(--text);
+  max-width: 720px;
+}
+
+.sn-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+@media (max-width: 900px) {
+  .sn-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sn-feature {
+  background: color-mix(in srgb, var(--bg) 92%, white 8%);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.5rem;
+  box-shadow: rgba(0, 0, 0, 0.04) 0 14px 30px -18px;
+  min-height: 220px;
+}
+.sn-feature__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(225, 29, 72, 0.10);
+  display: grid;
+  place-items: center;
+  margin-bottom: 0.9rem;
+}
+.sn-feature__title {
+  margin: 0 0 0.75rem;
+  color: var(--text-h);
+  font-size: 1.05rem;
+}
+.sn-feature__text {
+  margin: 0 0 1rem;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+.sn-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+.sn-list li {
+  padding: 0.35rem 0;
+  padding-left: 1.25rem;
+  position: relative;
+}
+.sn-list li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.sn-tabs {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.75rem;
+}
+.sn-tab {
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 0.85rem;
+}
+.sn-tab--active {
+  border-color: rgba(225, 29, 72, 0.35);
+  background: rgba(225, 29, 72, 0.08);
+  color: var(--accent);
+  font-weight: 600;
+}
+.sn-pill {
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 0.85rem;
+  color: var(--text);
+}
+.sn-pill--active {
+  background: rgba(225, 29, 72, 0.10);
+  border-color: rgba(225, 29, 72, 0.35);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.sn-why__item {
+  text-align: center;
+  padding: 0.5rem 0.75rem;
+}
+.sn-why__badge {
+  width: 54px;
+  height: 54px;
+  margin: 0 auto 0.75rem;
+  border-radius: 999px;
+  background: rgba(225, 29, 72, 0.10);
+  display: grid;
+  place-items: center;
+  font-size: 1.1rem;
+}
+.sn-why__title {
+  margin: 0 0 0.4rem;
+  color: var(--text-h);
+  font-size: 1.05rem;
+}
+.sn-why__text {
+  margin: 0 auto;
+  max-width: 320px;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.sn-cta {
+  padding: 2.5rem 0;
+}
+.sn-cta__inner {
+  background: linear-gradient(90deg, #e11d48, #fb7185);
+  border-radius: 18px;
+  padding: 2.2rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  color: #fff;
+  box-shadow: rgba(225, 29, 72, 0.24) 0 18px 30px -18px;
+}
+@media (max-width: 900px) {
+  .sn-cta__inner {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+.sn-cta__title {
+  margin: 0 0 0.35rem;
+  color: #fff;
+  font-size: clamp(1.35rem, 2.6vw, 1.9rem);
+}
+.sn-cta__text {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.92);
+}
