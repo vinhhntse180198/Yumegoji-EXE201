@@ -10,7 +10,7 @@ Nền tảng học tiếng Nhật: backend **ASP.NET Core 8** (API + SignalR), f
 | [Node.js](https://nodejs.org/) | **18+** (khuyến nghị LTS) |
 | SQL Server | Bản cài trên Windows **hoặc** Docker (xem mục Docker) |
 | (Tuỳ chọn) [Ollama](https://ollama.com/) | Import bài học bằng AI khi không dùng OpenAI |
-| (Tuỳ chọn) [Docker Desktop](https://www.docker.com/products/docker-desktop/) | Chạy SQL Server trong container |
+| (Tuỳ chọn) [Docker Desktop](https://www.docker.com/products/docker-desktop/) | Chạy SQL Server trong container — xem **[DOCKER-DESKTOP.md](DOCKER-DESKTOP.md)** |
 
 ## Cấu trúc thư mục
 
