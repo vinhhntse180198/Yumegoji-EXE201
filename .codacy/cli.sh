@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 
 
 set -e +o pipefail
@@ -95,7 +95,7 @@ download_cli() {
     local version="$3"
 
     if [ ! -f "$bin_path" ]; then
-        echo "📥 Downloading CLI version $version..."
+        echo "ðŸ“¥ Downloading CLI version $version..."
 
         remote_file="codacy-cli-v2_${version}_${suffix}_${arch}.tar.gz"
         url="https://github.com/codacy/codacy-cli-v2/releases/download/${version}/${remote_file}"
@@ -107,13 +107,13 @@ download_cli() {
 
 # Warn if CODACY_CLI_V2_VERSION is set and update is requested
 if [ -n "$CODACY_CLI_V2_VERSION" ] && [ "$1" = "update" ]; then
-    echo "⚠️  Warning: Performing update with forced version $CODACY_CLI_V2_VERSION"
+    echo "âš ï¸  Warning: Performing update with forced version $CODACY_CLI_V2_VERSION"
     echo "    Unset CODACY_CLI_V2_VERSION to use the latest version"
 fi
 
 # Ensure version.yaml exists and is up to date
 if [ ! -f "$version_file" ] || [ "$1" = "update" ]; then
-    echo "ℹ️  Fetching latest version..."
+    echo "â„¹ï¸  Fetching latest version..."
     version=$(get_latest_version)
     mkdir -p "$CODACY_CLI_V2_TMP_FOLDER"
     echo "version: \"$version\"" > "$version_file"
