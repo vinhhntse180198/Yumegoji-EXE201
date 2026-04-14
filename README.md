@@ -17,7 +17,7 @@ Nền tảng học tiếng Nhật: backend **ASP.NET Core 8** (API + SignalR), f
 ```
 EXE201/
 ├── backend/                 # API .NET (Swagger, JWT, upload PDF/DOCX/PPTX)
-├── frontend/frontend/frontend/   # React + Vite (dev: cổng 8080)
+├── frontend/                     # React + Vite (dev: cổng 8080)
 ├── docker-compose.yml       # SQL Server 2022 (cổng host 14333)
 ├── backend/doc/sql/         # Script SQL (gộp: YumegojiDB-AllScripts.sql)
 └── README.md
@@ -86,11 +86,12 @@ Cổng có thể khác nếu bạn đổi trong `Properties/launchSettings.json`
 ## 3. Chạy frontend (React)
 
 ```bash
-cd frontend/frontend/frontend
+cd frontend
 npm install
 npm run dev
 ```
 
+- Mã nguồn trong **`frontend/src/`**: `api/` (`client.js` = env + đường dẫn Auth + axios; cùng các `*Api.js`, `chatHub.js`, …), `services/` (gọi `*Api` + chuẩn hóa dữ liệu / storage), `layout/`, `ui/`, `components/`, `pages/`, `context/`, `hooks/`, `data/`, `utils/`, `redux/` (dự phòng), `routes/`.
 - Ứng dụng web: **http://localhost:8080**
 - Vite proxy chuyển `/api` và `/hubs` sang backend (mặc định `http://localhost:5056` — xem `vite.config.js`, biến `VITE_PROXY_TARGET`).
 
@@ -107,7 +108,7 @@ Upload PDF/DOCX/PPTX có thể mất vài phút — frontend đã cấu hình ti
 
 ```bash
 # Frontend
-cd frontend/frontend/frontend
+cd frontend
 npm run build
 # Thư mục output: dist/
 

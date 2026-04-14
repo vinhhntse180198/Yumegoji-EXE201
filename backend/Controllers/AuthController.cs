@@ -72,7 +72,7 @@ public class AuthController : ControllerBase
     {
         var currentUserIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         int.TryParse(currentUserIdString, out var currentUserId);
-        var isAdmin = User.IsInRole("admin");
+        var isAdmin = User.IsInRole(AppRoles.Admin);
 
         if (!isAdmin && currentUserId != id)
         {
@@ -91,7 +91,7 @@ public class AuthController : ControllerBase
     {
         var currentUserIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         int.TryParse(currentUserIdString, out var currentUserId);
-        var isAdmin = User.IsInRole("admin");
+        var isAdmin = User.IsInRole(AppRoles.Admin);
 
         if (!isAdmin && currentUserId != id)
         {

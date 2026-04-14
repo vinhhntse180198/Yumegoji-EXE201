@@ -1,0 +1,41 @@
+# --- Secrets & local env (do not commit real secrets) ---
+.env
+.env.*
+!.env.example
+**/appsettings.Secrets.json
+
+# --- .NET / Visual Studio ---
+**/bin/
+**/obj/
+**/.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# --- Node / Vite / frontend ---
+node_modules/
+dist/
+dist-ssr/
+*.local
+coverage/
+.npm
+.eslintcache
+
+# --- OS & editors ---
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
+*.swo
+
+# --- Logs & temp ---
+*.log
+*.tmp
+*.temp
+
+# --- Archives accidentally dropped in repo root ---
+*.zip
+
+# --- Cursor (project choice: do not track Codacy rule copy) ---
+.cursor/rules/codacy.mdc

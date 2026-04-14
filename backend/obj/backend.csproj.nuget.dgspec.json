@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\EXE201\\EXE201\\backend\\backend.csproj": {}
+    "e:\\EXE201\\EXE201\\backend\\backend.csproj": {}
   },
   "projects": {
-    "E:\\EXE201\\EXE201\\backend\\backend.csproj": {
+    "e:\\EXE201\\EXE201\\backend\\backend.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\EXE201\\EXE201\\backend\\backend.csproj",
+        "projectUniqueName": "e:\\EXE201\\EXE201\\backend\\backend.csproj",
         "projectName": "backend",
-        "projectPath": "E:\\EXE201\\EXE201\\backend\\backend.csproj",
+        "projectPath": "e:\\EXE201\\EXE201\\backend\\backend.csproj",
         "packagesPath": "C:\\Users\\VINH\\.nuget\\packages\\",
-        "outputPath": "E:\\EXE201\\EXE201\\backend\\obj\\",
+        "outputPath": "e:\\EXE201\\EXE201\\backend\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

@@ -33,7 +33,8 @@ public class ChatController : ControllerBase
         return int.TryParse(sub, out var id) ? id : 0;
     }
 
-    private bool IsSiteModerator() => User.IsInRole("admin") || User.IsInRole("moderator");
+    private bool IsSiteModerator() =>
+        User.IsInRole(AppRoles.Admin) || User.IsInRole(AppRoles.Moderator);
 
     /// <summary>Đặc tả phòng 5.1 (slug/level seed trong DB).</summary>
     [HttpGet("room-catalog")]

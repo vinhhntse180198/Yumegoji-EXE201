@@ -158,4 +158,4 @@ E:\EXE201\EXE201\backend\obj\Debug\net8.0\refint\backend.dll
 E:\EXE201\EXE201\backend\obj\Debug\net8.0\backend.pdb
 E:\EXE201\EXE201\backend\obj\Debug\net8.0\backend.genruntimeconfig.cache
 E:\EXE201\EXE201\backend\obj\Debug\net8.0\ref\backend.dll
-E:\EXE201\EXE201\backend\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
+E:\EXE201\EXE201\backend\bin\Debug\net8.0\appsettings.Docker.json

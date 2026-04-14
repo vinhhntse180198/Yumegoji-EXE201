@@ -46,8 +46,7 @@ backend/
 │   ├── ModerationController.cs   # [7] Kiểm duyệt
 │   ├── AdminController.cs         # [8] Quản trị
 │   ├── PaymentController.cs       # [9] Thanh toán
-│   ├── AIController.cs            # [10] AI / Chatbot
-│   └── WeatherForecastController.cs
+│   └── AIController.cs            # [10] AI / Chatbot
 │
 ├── Services/                       # Business logic theo mô-đun
 │   ├── Auth/                      # [1] Đăng ký, đăng nhập, xác minh email, quên mật khẩu
@@ -142,4 +141,4 @@ Khi code: dùng **Middleware** hoặc **Authorization Policy** (Role: Guest, Use
 - **CLI**: `dotnet run` trong thư mục chứa `backend.csproj`.
 - **Swagger**: `https://localhost:<port>/swagger` (môi trường Development).
 
-Hiện tại tất cả Controller/Service chỉ là placeholder (không logic). Bước tiếp theo: thêm Entity trong `Models/`, DTO trong `DTOs/`, và implement từng Service + Controller theo đặc tả.
+Các Controller/Service đã được triển khai theo từng mô-đun; khi mở rộng đặc tả, bổ sung Entity trong `Models/`, DTO trong `DTOs/`, và logic tương ứng trong Service + Controller.
