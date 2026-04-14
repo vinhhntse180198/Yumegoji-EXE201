@@ -3024,7 +3024,7 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "backend.Controllers.UsersMeLearningController",
+    "ContainingType": "backend.Controllers.MeLearningController",
     "Method": "GetBookmarks",
     "RelativePath": "api/users/me/bookmarks",
     "HttpMethod": "GET",
@@ -3055,7 +3055,7 @@
     ]
   },
   {
-    "ContainingType": "backend.Controllers.UsersMeProfileController",
+    "ContainingType": "backend.Controllers.MeProfileController",
     "Method": "GetProfile",
     "RelativePath": "api/users/me/profile",
     "HttpMethod": "GET",
@@ -3065,7 +3065,7 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "backend.Controllers.UsersMeProfileController",
+    "ContainingType": "backend.Controllers.MeProfileController",
     "Method": "UpdateProfile",
     "RelativePath": "api/users/me/profile",
     "HttpMethod": "PUT",
@@ -3081,7 +3081,7 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "backend.Controllers.UsersMeLearningController",
+    "ContainingType": "backend.Controllers.MeLearningController",
     "Method": "GetProgress",
     "RelativePath": "api/users/me/progress",
     "HttpMethod": "GET",
@@ -3117,7 +3117,7 @@
     ]
   },
   {
-    "ContainingType": "backend.Controllers.UsersMeLearningController",
+    "ContainingType": "backend.Controllers.MeLearningController",
     "Method": "GetProgressSummary",
     "RelativePath": "api/users/me/progress/summary",
     "HttpMethod": "GET",
@@ -3202,26 +3202,5 @@
         "StatusCode": 200
       }
     ]
-  },
-  {
-    "ContainingType": "backend.Controllers.WeatherForecastController",
-    "Method": "Get",
-    "RelativePath": "WeatherForecast",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": [
-      {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[backend.WeatherForecast, backend, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ],
-    "EndpointName": "GetWeatherForecast"
   }
 ]

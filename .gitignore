@@ -39,3 +39,5 @@ Thumbs.db
 
 # --- Cursor (project choice: do not track Codacy rule copy) ---
 .cursor/rules/codacy.mdc
+# MCP local config (chứa API key — không commit)
+.cursor/mcp.json
