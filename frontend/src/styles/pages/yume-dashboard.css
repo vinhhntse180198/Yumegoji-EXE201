@@ -1046,6 +1046,26 @@ html[data-theme='dark'] .yume-pill {
   max-width: 720px;
 }
 
+/* Mẫu Sakura Learning — nền nhẹ, thẻ trắng, accent đỏ */
+.yume-dashboard.yume-account-page--sakura {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.25rem clamp(0.75rem, 2vw, 1.5rem) 2.75rem;
+  position: relative;
+  background:
+    radial-gradient(ellipse 55% 40% at 12% 18%, rgba(252, 231, 243, 0.55), transparent 55%),
+    radial-gradient(ellipse 50% 45% at 88% 8%, rgba(254, 226, 226, 0.45), transparent 50%),
+    radial-gradient(ellipse 40% 35% at 70% 92%, rgba(243, 232, 255, 0.35), transparent 55%),
+    linear-gradient(180deg, #faf7f8 0%, #f4f5f7 100%);
+}
+
+html[data-theme='dark'] .yume-dashboard.yume-account-page--sakura {
+  background:
+    radial-gradient(ellipse 50% 40% at 15% 12%, rgba(190, 24, 93, 0.12), transparent 55%),
+    radial-gradient(ellipse 45% 40% at 85% 20%, rgba(59, 130, 246, 0.08), transparent 50%),
+    linear-gradient(180deg, #0f1117 0%, #12151f 100%);
+}
+
 .yume-account-profile {
   position: relative;
   border-radius: 20px;
@@ -1054,6 +1074,313 @@ html[data-theme='dark'] .yume-pill {
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
   margin-bottom: 1.25rem;
+}
+
+.yume-account-profile--sakura {
+  overflow: visible;
+  border-radius: 22px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow:
+    0 4px 6px rgba(15, 23, 42, 0.04),
+    0 18px 48px rgba(15, 23, 42, 0.08);
+  background: #ffffff;
+}
+
+.yume-account-profile--sakura .yume-account-profile__cover--sakura {
+  overflow: hidden;
+  border-radius: 22px 22px 0 0;
+}
+
+.yume-account-profile--sakura .yume-account-profile__body--sakura {
+  border-radius: 0 0 22px 22px;
+  background: #ffffff;
+}
+
+html[data-theme='dark'] .yume-account-profile--sakura .yume-account-profile__body--sakura {
+  background: var(--bg);
+}
+
+html[data-theme='dark'] .yume-account-profile--sakura {
+  background: var(--bg);
+  border-color: rgba(148, 163, 184, 0.12);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+}
+
+.yume-account-profile__cover--sakura {
+  height: clamp(168px, 28vw, 240px);
+}
+
+.yume-account-profile__body--sakura {
+  padding: 0 1.35rem 1.5rem;
+}
+
+.sakura-profile__identity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-top: -52px;
+  padding-bottom: 0.25rem;
+}
+
+.sakura-profile__avatar-wrap {
+  position: relative;
+  z-index: 2;
+}
+
+.sakura-profile__avatar-ring {
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.14);
+}
+
+.sakura-profile__avatar-face {
+  width: 112px;
+  height: 112px;
+  font-size: 2rem;
+}
+
+.sakura-profile__avatar-link {
+  margin-top: 0.35rem;
+}
+
+.sakura-profile__name {
+  margin: 0.85rem 0 0.35rem;
+  font-size: clamp(1.5rem, 4vw, 1.95rem);
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+html[data-theme='dark'] .sakura-profile__name {
+  color: #f8fafc;
+}
+
+.sakura-profile__badge-row {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.sakura-profile__level-pill {
+  display: inline-block;
+  margin: 0.5rem 0 0;
+  padding: 0.35rem 0.95rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #b91c1c;
+  background: linear-gradient(180deg, #fff1f2 0%, #ffe4e6 100%);
+  border: 1px solid rgba(244, 63, 94, 0.25);
+}
+
+html[data-theme='dark'] .sakura-profile__level-pill {
+  color: #fecdd3;
+  background: rgba(190, 24, 93, 0.2);
+  border-color: rgba(244, 63, 94, 0.25);
+}
+
+.sakura-profile__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 1.5rem;
+  margin: 1.35rem 0 1.1rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+html[data-theme='dark'] .sakura-profile__tabs {
+  border-bottom-color: rgba(148, 163, 184, 0.14);
+}
+
+.sakura-profile__tab {
+  position: relative;
+  border: none;
+  background: transparent;
+  padding: 0.45rem 0.15rem 0.65rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text);
+  opacity: 0.72;
+  cursor: pointer;
+  transition: color 0.15s, opacity 0.15s;
+}
+
+.sakura-profile__tab:hover {
+  opacity: 1;
+  color: #be123c;
+}
+
+.sakura-profile__tab--active {
+  opacity: 1;
+  color: #be123c;
+}
+
+.sakura-profile__tab--active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #be123c, #e11d48);
+}
+
+html[data-theme='dark'] .sakura-profile__tab--active {
+  color: #fb7185;
+}
+
+.sakura-profile__stats {
+  margin-top: 0.35rem;
+}
+
+.sakura-stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 1rem 1rem 0.95rem;
+  border-radius: 18px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+html[data-theme='dark'] .sakura-stat-card {
+  background: color-mix(in srgb, var(--bg) 92%, #1e293b);
+  border-color: rgba(148, 163, 184, 0.12);
+  box-shadow: none;
+}
+
+.sakura-stat-card__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.65rem;
+  color: #ffffff;
+}
+
+.sakura-stat-card__icon--trophy {
+  background: linear-gradient(145deg, #be123c, #e11d48);
+}
+
+.sakura-stat-card__icon--doc {
+  background: linear-gradient(145deg, #be123c, #f43f5e);
+}
+
+.sakura-stat-card__icon--people {
+  background: linear-gradient(145deg, #9f1239, #be123c);
+}
+
+.sakura-profile__panel {
+  margin-top: 0.5rem;
+  padding: 1rem 1.1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: color-mix(in srgb, #fff 96%, #fce7f3);
+}
+
+html[data-theme='dark'] .sakura-profile__panel {
+  background: color-mix(in srgb, var(--bg) 88%, #4c0519);
+  border-color: rgba(148, 163, 184, 0.14);
+}
+
+.sakura-profile__panel-title {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-h);
+}
+
+.sakura-profile__dl {
+  margin-top: 0.35rem;
+}
+
+.yume-account-composer--sakura.yume-panel {
+  border-radius: 20px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: 0 10px 32px rgba(15, 23, 42, 0.07);
+  padding: 1rem 1.1rem 1.05rem;
+  background: #ffffff;
+}
+
+html[data-theme='dark'] .yume-account-composer--sakura.yume-panel {
+  background: var(--bg);
+  border-color: rgba(148, 163, 184, 0.12);
+}
+
+.yume-account-feed--sakura .sakura-feed__title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text);
+  opacity: 0.75;
+}
+
+.yume-account-post-card--sakura {
+  border-radius: 20px;
+  padding: 1.1rem 1.15rem 1rem;
+  box-shadow: 0 10px 36px rgba(15, 23, 42, 0.07);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.sakura-post__meta {
+  font-size: 0.78rem;
+  color: var(--text);
+  opacity: 0.78;
+}
+
+.yume-account-post-card__media--sakura {
+  max-height: 420px;
+  border-radius: 16px;
+}
+
+.sakura-post__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1.25rem;
+  margin: 0.85rem 0 0.35rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.06);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+html[data-theme='dark'] .sakura-post__footer {
+  border-top-color: rgba(148, 163, 184, 0.12);
+}
+
+.sakura-post__stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  opacity: 0.88;
+}
+
+.sakura-post__stat--share {
+  margin-left: auto;
+  opacity: 0.55;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 560px) {
+  .sakura-profile__identity {
+    margin-top: -48px;
+  }
+
+  .sakura-profile__tabs {
+    gap: 0.5rem 1rem;
+  }
+
+  .sakura-profile__tab {
+    font-size: 0.82rem;
+  }
 }
 
 .yume-account-profile--premium {

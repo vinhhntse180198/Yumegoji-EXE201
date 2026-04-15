@@ -33,6 +33,24 @@ function buildImageUrl(path) {
   return `${origin}${path}`;
 }
 
+function totalReactionCount(counts) {
+  if (!counts || typeof counts !== 'object') return 0;
+  return Object.values(counts).reduce((sum, n) => sum + (Number(n) || 0), 0);
+}
+
+function formatPostVisibilityLine(createdAt) {
+  if (!createdAt) return 'Công khai';
+  const d = new Date(createdAt);
+  if (Number.isNaN(d.getTime())) return 'Công khai';
+  const diffMs = Date.now() - d.getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return 'Vừa mới đăng • Công khai';
+  if (mins < 60) return `${mins} phút trước • Công khai`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs} giờ trước • Công khai`;
+  return `${d.toLocaleDateString('vi-VN')} • Công khai`;
+}
+
 export default function AccountPage() {
   const { user, setUser } = useAuth();
   const [avatarPreview, setAvatarPreview] = useState(user?.avatarUrl ? buildImageUrl(user.avatarUrl) : '');
@@ -54,7 +72,8 @@ export default function AccountPage() {
   const [friendsCount, setFriendsCount] = useState(null);
   const [coverFileError, setCoverFileError] = useState('');
   const [coverUploading, setCoverUploading] = useState(false);
-  const quickEmojis = ['👍', '❤️', '😂', '😍', '😮', '😢', '😡'];
+  const quickEmojis = ['👍', '❤️', '🌸', '🔥'];
+  const [profileTab, setProfileTab] = useState('info');
 
   const displayName = useMemo(
     () => user?.displayName || user?.username || user?.name || user?.email?.split('@')[0] || 'Học viên',
@@ -381,9 +400,9 @@ export default function AccountPage() {
   };
 
   return (
-    <div className="yume-dashboard yume-account-page">
-      <header className={`yume-account-profile${isPremium ? ' yume-account-profile--premium' : ''}`}>
-        <div className="yume-account-profile__cover" role="region" aria-label="Ảnh bìa hồ sơ">
+    <div className="yume-dashboard yume-account-page yume-account-page--sakura">
+      <header className={`yume-account-profile yume-account-profile--sakura${isPremium ? ' yume-account-profile--premium' : ''}`}>
+        <div className="yume-account-profile__cover yume-account-profile__cover--sakura" role="region" aria-label="Ảnh bìa hồ sơ">
           {coverPreview ? (
             <img src={coverPreview} alt="" className="yume-account-profile__cover-img" />
           ) : null}
@@ -416,96 +435,150 @@ export default function AccountPage() {
           {coverFileError ? <p className="yume-account-profile__cover-err">{coverFileError}</p> : null}
         </div>
 
-        <div className="yume-account-profile__body">
-          <div className="yume-account-profile__head">
-            <div className="yume-account-profile__avatar-col">
+        <div className="yume-account-profile__body yume-account-profile__body--sakura">
+          <div className="sakura-profile__identity">
+            <div className="sakura-profile__avatar-wrap">
               <div
-                className={`yume-account-profile__avatar-ring${isPremium ? ' yume-account-profile__avatar-ring--premium' : ''}`}
+                className={`yume-account-profile__avatar-ring sakura-profile__avatar-ring${isPremium ? ' yume-account-profile__avatar-ring--premium' : ''}`}
               >
-                <div className="yume-account-profile__avatar-face">
+                <div className="yume-account-profile__avatar-face sakura-profile__avatar-face">
                   {avatarPreview ? <img src={avatarPreview} alt="" /> : avatarInitial}
                 </div>
               </div>
-              <label htmlFor="avatar-file" className="yume-account-profile__avatar-btn">
-                Đổi ảnh đại diện
-              </label>
-              <input
-                id="avatar-file"
-                type="file"
-                accept="image/*"
-                className="yume-account-profile__visually-hidden"
-                onChange={handleAvatarFileChange}
-              />
-              {avatarFileError ? <p className="yume-account-profile__avatar-err">{avatarFileError}</p> : null}
             </div>
+            <label htmlFor="avatar-file" className="yume-account-profile__avatar-btn sakura-profile__avatar-link">
+              Đổi ảnh đại diện
+            </label>
+            <input
+              id="avatar-file"
+              type="file"
+              accept="image/*"
+              className="yume-account-profile__visually-hidden"
+              onChange={handleAvatarFileChange}
+            />
+            {avatarFileError ? <p className="yume-account-profile__avatar-err">{avatarFileError}</p> : null}
 
-            <div className="yume-account-profile__meta">
-              <div className="yume-account-profile__name-row">
-                <h1 className="yume-account-profile__name">{displayName}</h1>
-                {isPremium ? <PremiumBadge variant="large" /> : null}
-              </div>
-              <p className="yume-account-profile__tagline">
-                {levelTitle}
-                {isPremium ? (
-                  <>
-                    {' '}
-                    · <span className="yume-account-profile__tag-premium">Gói Premium</span>
-                  </>
-                ) : null}
-              </p>
-
-              <details className="yume-account-profile__details">
-                <summary>Thông tin tài khoản</summary>
-                <dl className="yume-account-profile__dl">
-                  <div>
-                    <dt>Email</dt>
-                    <dd>{email || '—'}</dd>
-                  </div>
-                  <div>
-                    <dt>Tên đăng nhập</dt>
-                    <dd>{username || '—'}</dd>
-                  </div>
-                  <div>
-                    <dt>Cấp độ JLPT</dt>
-                    <dd>{levelCode}</dd>
-                  </div>
-                </dl>
-              </details>
+            <h1 className="yume-account-profile__name sakura-profile__name">{displayName}</h1>
+            <div className="sakura-profile__badge-row">
+              {isPremium ? <PremiumBadge variant="large" /> : null}
             </div>
+            <p className="sakura-profile__level-pill">
+              {levelTitle}
+              {isPremium ? ' — Gói Premium' : ''}
+            </p>
           </div>
 
-          <div className="yume-account-profile__stats">
-            <article className="yume-account-stat-card">
-              <div className="yume-account-stat-card__label">Cấp độ</div>
-              <div className="yume-account-stat-card__value">{levelCode}</div>
-              <div
-                className="yume-account-stat-card__bar"
-                role="progressbar"
-                aria-valuenow={levelCompletionPct}
-                aria-valuemin={0}
-                aria-valuemax={100}
-              >
-                <div className="yume-account-stat-card__bar-fill" style={{ width: `${levelCompletionPct}%` }} />
-              </div>
-              <div className="yume-account-stat-card__hint">
-                {progressLoading ? 'Đang tải tiến độ…' : `${levelCompletionPct}% hoàn thành (theo bài đã xuất bản)`}
-              </div>
-            </article>
-            <article className="yume-account-stat-card">
-              <div className="yume-account-stat-card__label">Bài viết</div>
-              <div className="yume-account-stat-card__value">{loadingPosts ? '…' : posts.length}</div>
-              <div className="yume-account-stat-card__hint">Bài đăng của bạn</div>
-            </article>
-            <article className="yume-account-stat-card">
-              <div className="yume-account-stat-card__label">Bạn bè</div>
-              <div className="yume-account-stat-card__value">{friendsCount === null ? '…' : friendsCount}</div>
-              <div className="yume-account-stat-card__hint">Danh sách kết bạn</div>
-            </article>
-          </div>
+          <nav className="sakura-profile__tabs" aria-label="Hồ sơ">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={profileTab === 'info'}
+              className={`sakura-profile__tab${profileTab === 'info' ? ' sakura-profile__tab--active' : ''}`}
+              onClick={() => setProfileTab('info')}
+            >
+              Thông tin tài khoản
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={profileTab === 'settings'}
+              className={`sakura-profile__tab${profileTab === 'settings' ? ' sakura-profile__tab--active' : ''}`}
+              onClick={() => setProfileTab('settings')}
+            >
+              Cài đặt
+            </button>
+          </nav>
+
+          {profileTab === 'info' ? (
+            <div className="yume-account-profile__stats sakura-profile__stats">
+              <article className="yume-account-stat-card sakura-stat-card">
+                <div className="sakura-stat-card__icon sakura-stat-card__icon--trophy" aria-hidden>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M6 4h12v2a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V4Z"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinejoin="round"
+                    />
+                    <path d="M9 14h6v2H9v-2Z" fill="currentColor" opacity="0.35" />
+                    <path d="M8 20h8v2H8v-2Z" fill="currentColor" />
+                  </svg>
+                </div>
+                <div className="yume-account-stat-card__label">Cấp độ</div>
+                <div className="yume-account-stat-card__value">{levelCode}</div>
+                <div
+                  className="yume-account-stat-card__bar"
+                  role="progressbar"
+                  aria-valuenow={levelCompletionPct}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                >
+                  <div className="yume-account-stat-card__bar-fill" style={{ width: `${levelCompletionPct}%` }} />
+                </div>
+                <div className="yume-account-stat-card__hint">
+                  {progressLoading ? 'Đang tải tiến độ…' : `${levelCompletionPct}% tiến độ`}
+                </div>
+              </article>
+              <article className="yume-account-stat-card sakura-stat-card">
+                <div className="sakura-stat-card__icon sakura-stat-card__icon--doc" aria-hidden>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinejoin="round"
+                    />
+                    <path d="M14 3v5h5" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+                  </svg>
+                </div>
+                <div className="yume-account-stat-card__label">Bài viết</div>
+                <div className="yume-account-stat-card__value">{loadingPosts ? '…' : posts.length}</div>
+                <div className="yume-account-stat-card__hint">Bài đăng của bạn</div>
+              </article>
+              <article className="yume-account-stat-card sakura-stat-card">
+                <div className="sakura-stat-card__icon sakura-stat-card__icon--people" aria-hidden>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="9" cy="8" r="3" stroke="currentColor" strokeWidth="1.6" />
+                    <path d="M4 20v-1a4 4 0 0 1 4-4h2a4 4 0 0 1 4 4v1" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                    <path
+                      d="M17 11a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                    />
+                    <path d="M20 20v-1a3 3 0 0 0-2.1-2.87" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                  </svg>
+                </div>
+                <div className="yume-account-stat-card__label">Bạn bè</div>
+                <div className="yume-account-stat-card__value">{friendsCount === null ? '…' : friendsCount}</div>
+                <div className="yume-account-stat-card__hint">Danh sách kết bạn</div>
+              </article>
+            </div>
+          ) : null}
+
+          {profileTab === 'settings' ? (
+            <div className="sakura-profile__panel">
+              <h2 className="sakura-profile__panel-title">Thông tin đăng nhập</h2>
+              <dl className="yume-account-profile__dl sakura-profile__dl">
+                <div>
+                  <dt>Email</dt>
+                  <dd>{email || '—'}</dd>
+                </div>
+                <div>
+                  <dt>Tên đăng nhập</dt>
+                  <dd>{username || '—'}</dd>
+                </div>
+                <div>
+                  <dt>Cấp độ JLPT</dt>
+                  <dd>{levelCode}</dd>
+                </div>
+              </dl>
+            </div>
+          ) : null}
         </div>
       </header>
 
-      <section className="yume-account-composer yume-panel" aria-label="Đăng bài mới">
+      <section className="yume-account-composer yume-panel yume-account-composer--sakura" aria-label="Đăng bài mới">
         <form onSubmit={handleCreatePost} className="yume-account-composer__form">
           <div className="yume-account-composer__row">
             <div className="yume-account-composer__mini-avatar" aria-hidden>
@@ -555,9 +628,9 @@ export default function AccountPage() {
         </p>
       ) : null}
 
-      <section className="yume-account-feed" aria-labelledby="yume-account-feed-title">
-        <h2 id="yume-account-feed-title" className="yume-account-feed__title">
-          Dòng thời gian
+      <section className="yume-account-feed yume-account-feed--sakura" aria-labelledby="yume-account-feed-title">
+        <h2 id="yume-account-feed-title" className="yume-account-feed__title sakura-feed__title">
+          Bài đăng
         </h2>
         <div className="yume-account__posts-scroll yume-account__posts-scroll--feed">
           {loadingPosts ? (
@@ -576,8 +649,9 @@ export default function AccountPage() {
                 const reactionsSummary = p.reactions ?? p.Reactions ?? null;
                 const reactionCounts = reactionsSummary?.counts ?? reactionsSummary?.Counts ?? {};
                 const comments = commentsByPost[id] || [];
+                const reactTotal = totalReactionCount(reactionCounts);
                 return (
-                  <li key={id} className="yume-account-post-card">
+                  <li key={id} className="yume-account-post-card yume-account-post-card--sakura">
                     <div className="yume-account-post-card__head">
                       <div className="yume-account-post-card__author">
                         <div className="yume-account-post-card__author-av" aria-hidden>
@@ -585,8 +659,8 @@ export default function AccountPage() {
                         </div>
                         <div>
                           <div className="yume-account-post-card__author-name">{displayName}</div>
-                          <div className="yume-account-post-card__time">
-                            {createdAt ? new Date(createdAt).toLocaleString('vi-VN') : ''}
+                          <div className="yume-account-post-card__time sakura-post__meta">
+                            {formatPostVisibilityLine(createdAt)}
                           </div>
                         </div>
                       </div>
@@ -597,11 +671,22 @@ export default function AccountPage() {
                     {content ? <p className="yume-account-post-card__text">{content}</p> : null}
                     {imageUrl ? (
                       <img
-                        className="yume-account-post-card__media"
+                        className="yume-account-post-card__media yume-account-post-card__media--sakura"
                         src={buildImageUrl(imageUrl)}
                         alt=""
                       />
                     ) : null}
+                    <div className="sakura-post__footer" aria-label="Tương tác bài viết">
+                      <span className="sakura-post__stat" title="Lượt thích">
+                        <span aria-hidden>❤️</span> {reactTotal}
+                      </span>
+                      <span className="sakura-post__stat" title="Bình luận">
+                        <span aria-hidden>💬</span> {comments.length}
+                      </span>
+                      <span className="sakura-post__stat sakura-post__stat--share" aria-hidden title="Chia sẻ">
+                        ↗
+                      </span>
+                    </div>
                     <div className="yume-account__post-reactions">
                       <button
                         type="button"

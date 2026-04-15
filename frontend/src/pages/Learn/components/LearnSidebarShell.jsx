@@ -88,111 +88,14 @@ function IconCheck({ className }) {
 
 const JLPT_LEVELS = ['N5', 'N4', 'N3'];
 
-/**
- * Sidebar trang Học — cấu trúc bám mẫu hình 2: cấp JLPT, phân loại, danh sách, thử thách, CTA.
- */
-export function LearnSidebarShell({
-  user,
-  displayName,
-  isAuthenticated,
-  sidebarPct,
-  sidebarDone,
-  sidebarTotal,
-  sectionFilter,
-  goFilter,
-  lessonGroups,
-  visibleGroups,
-  visibleDbLessons,
-  ctaSlug,
-  ctaTitle,
-}) {
-  const levelCode = getJlptLevelCodeFromUser(user);
-  const ur = jlptRank(levelCode);
+/** Một thẻ trong cột sidebar (mẫu Hanami: nhiều khối bo góc tách nhau) */
+function ShellCard({ variant, children }) {
+  return <div className={`learn-shell-card learn-shell-card--${variant}`}>{children}</div>;
+}
 
+function LessonListSection({ sectionFilter, goFilter, lessonGroups, visibleGroups, visibleDbLessons }) {
   return (
-    <aside className="learn-layout__nav learn-sidebar learn-sidebar--shell" aria-label="Điều hướng khóa học">
-      <Link className="learn-sidebar__back" to={ROUTES.DASHBOARD}>
-        ← Về Dashboard
-      </Link>
-
-      <div className="learn-shell-user">
-        <div className="learn-shell-user__name">{displayName}</div>
-        <div className="learn-shell-user__line">
-          Học viên — <strong>JLPT {levelCode}</strong>
-          {isAuthenticated && sidebarTotal > 0 ? (
-            <>
-              {' '}
-              — {sidebarPct}% ({sidebarDone}/{sidebarTotal})
-            </>
-          ) : null}
-        </div>
-        <div className="learn-shell-user__bar" aria-hidden>
-          <div className="learn-shell-user__fill" style={{ width: `${isAuthenticated && sidebarTotal ? sidebarPct : 0}%` }} />
-        </div>
-      </div>
-
-      <div className="learn-shell-jlpt" aria-label="Cấp độ JLPT (theo hồ sơ)">
-        {JLPT_LEVELS.map((code) => {
-          const cr = jlptRank(code);
-          let mod = 'learn-shell-jlpt__item--future';
-          if (cr === ur) mod = 'learn-shell-jlpt__item--current';
-          else if (cr > ur) mod = 'learn-shell-jlpt__item--done';
-          else if (cr < ur) mod = 'learn-shell-jlpt__item--locked';
-          return (
-            <div key={code} className={`learn-shell-jlpt__item ${mod}`}>
-              <span className="learn-shell-jlpt__code">{code}</span>
-              {cr > ur ? <IconCheck className="learn-shell-jlpt__ico" /> : null}
-              {cr < ur ? <IconLock className="learn-shell-jlpt__ico" /> : null}
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="learn-shell-cats-label">Phân loại học tập</div>
-      <nav className="learn-shell-cats" aria-label="Lọc theo dạng bài">
-        <button
-          type="button"
-          className={`learn-shell-cats__btn${sectionFilter === 'vocab' ? ' learn-shell-cats__btn--active' : ''}`}
-          onClick={() => goFilter('vocab')}
-        >
-          <IconChar className="learn-shell-cats__ico" />
-          Từ vựng
-        </button>
-        <button
-          type="button"
-          className={`learn-shell-cats__btn${sectionFilter === 'grammar' ? ' learn-shell-cats__btn--active' : ''}`}
-          onClick={() => goFilter('grammar')}
-        >
-          <IconGrammar className="learn-shell-cats__ico" />
-          Ngữ pháp
-        </button>
-        <button
-          type="button"
-          className={`learn-shell-cats__btn${sectionFilter === 'kanji' ? ' learn-shell-cats__btn--active' : ''}`}
-          onClick={() => goFilter('kanji')}
-        >
-          <IconKanji className="learn-shell-cats__ico" />
-          Kanji
-        </button>
-        <button
-          type="button"
-          className={`learn-shell-cats__btn${sectionFilter === 'dialogue' ? ' learn-shell-cats__btn--active' : ''}`}
-          onClick={() => goFilter('dialogue')}
-        >
-          <IconChat className="learn-shell-cats__ico" />
-          Hội thoại
-        </button>
-      </nav>
-
-      <NavLink
-        to={ROUTES.LEARN}
-        end
-        className={({ isActive }) => `learn-shell-roadmap${isActive ? ' learn-shell-roadmap--active' : ''}`}
-      >
-        <IconRoadmap className="learn-shell-roadmap__ico" />
-        Lộ trình tổng quan
-      </NavLink>
-
+    <ShellCard variant="lessons">
       <div className="learn-nav__group-label learn-sidebar__list-label">Danh sách bài</div>
       <div className="learn-nav__tabs learn-nav__tabs--shell" role="tablist" aria-label="Lọc theo nhóm">
         <button
@@ -263,19 +166,138 @@ export function LearnSidebarShell({
           </>
         ) : null}
       </div>
+    </ShellCard>
+  );
+}
 
-      <Link className="learn-shell-weekly" to={`${ROUTES.PLAY}/daily`}>
-        <span className="learn-shell-weekly__kicker">Thử thách hàng tuần</span>
-        <span className="learn-shell-weekly__title">Ôn nhanh · nhận XP</span>
-        <span className="learn-shell-weekly__go">Vào thử thách →</span>
-      </Link>
+/**
+ * Cột trái trang Học — thứ tự (trên → dưới):
+ * 1) Tiến độ học viên  2) JLPT  3) Phân loại + lộ trình  4) Danh sách bài  5) Thử thách tuần
+ */
+export function LearnSidebarShell({
+  user,
+  displayName,
+  isAuthenticated,
+  sidebarPct,
+  sidebarDone,
+  sidebarTotal,
+  sectionFilter,
+  goFilter,
+  lessonGroups,
+  visibleGroups,
+  visibleDbLessons,
+}) {
+  const levelCode = getJlptLevelCodeFromUser(user);
+  const ur = jlptRank(levelCode);
 
-      {ctaSlug ? (
-        <Link className="learn-sidebar__cta" to={`${ROUTES.LEARN}/${encodeURIComponent(ctaSlug)}`}>
-          <span className="learn-sidebar__cta-kicker">TIẾP TỤC HÀNH TRÌNH</span>
-          <span className="learn-sidebar__cta-title">{ctaTitle}</span>
-        </Link>
-      ) : null}
+  return (
+    <aside className="learn-layout__nav learn-sidebar learn-sidebar--shell" aria-label="Điều hướng khóa học">
+      <div className="learn-shell-stack">
+        <ShellCard variant="user">
+          <Link className="learn-sidebar__back" to={ROUTES.DASHBOARD}>
+            ← Về Dashboard
+          </Link>
+          <div className="learn-shell-user">
+            <div className="learn-shell-user__name">{displayName}</div>
+            <div className="learn-shell-user__line">
+              Học viên — <strong>JLPT {levelCode}</strong>
+              {isAuthenticated && sidebarTotal > 0 ? (
+                <>
+                  {' '}
+                  — {sidebarPct}% ({sidebarDone}/{sidebarTotal})
+                </>
+              ) : null}
+            </div>
+            <div className="learn-shell-user__bar" aria-hidden>
+              <div
+                className="learn-shell-user__fill"
+                style={{ width: `${isAuthenticated && sidebarTotal ? sidebarPct : 0}%` }}
+              />
+            </div>
+          </div>
+        </ShellCard>
+
+        <ShellCard variant="jlpt">
+          <div className="learn-shell-jlpt" aria-label="Cấp độ JLPT (theo hồ sơ)">
+            {JLPT_LEVELS.map((code) => {
+              const cr = jlptRank(code);
+              let mod = 'learn-shell-jlpt__item--future';
+              if (cr === ur) mod = 'learn-shell-jlpt__item--current';
+              else if (cr > ur) mod = 'learn-shell-jlpt__item--done';
+              else if (cr < ur) mod = 'learn-shell-jlpt__item--locked';
+              return (
+                <div key={code} className={`learn-shell-jlpt__item ${mod}`}>
+                  <span className="learn-shell-jlpt__code">{code}</span>
+                  {cr > ur ? <IconCheck className="learn-shell-jlpt__ico" /> : null}
+                  {cr < ur ? <IconLock className="learn-shell-jlpt__ico" /> : null}
+                </div>
+              );
+            })}
+          </div>
+        </ShellCard>
+
+        <ShellCard variant="filters">
+          <div className="learn-shell-cats-label">Phân loại học tập</div>
+          <nav className="learn-shell-cats" aria-label="Lọc theo dạng bài">
+            <button
+              type="button"
+              className={`learn-shell-cats__btn${sectionFilter === 'vocab' ? ' learn-shell-cats__btn--active' : ''}`}
+              onClick={() => goFilter('vocab')}
+            >
+              <IconChar className="learn-shell-cats__ico" />
+              Từ vựng
+            </button>
+            <button
+              type="button"
+              className={`learn-shell-cats__btn${sectionFilter === 'grammar' ? ' learn-shell-cats__btn--active' : ''}`}
+              onClick={() => goFilter('grammar')}
+            >
+              <IconGrammar className="learn-shell-cats__ico" />
+              Ngữ pháp
+            </button>
+            <button
+              type="button"
+              className={`learn-shell-cats__btn${sectionFilter === 'kanji' ? ' learn-shell-cats__btn--active' : ''}`}
+              onClick={() => goFilter('kanji')}
+            >
+              <IconKanji className="learn-shell-cats__ico" />
+              Kanji
+            </button>
+            <button
+              type="button"
+              className={`learn-shell-cats__btn${sectionFilter === 'dialogue' ? ' learn-shell-cats__btn--active' : ''}`}
+              onClick={() => goFilter('dialogue')}
+            >
+              <IconChat className="learn-shell-cats__ico" />
+              Hội thoại
+            </button>
+          </nav>
+          <NavLink
+            to={ROUTES.LEARN}
+            end
+            className={({ isActive }) => `learn-shell-roadmap${isActive ? ' learn-shell-roadmap--active' : ''}`}
+          >
+            <IconRoadmap className="learn-shell-roadmap__ico" />
+            Lộ trình tổng quan
+          </NavLink>
+        </ShellCard>
+
+        <LessonListSection
+          sectionFilter={sectionFilter}
+          goFilter={goFilter}
+          lessonGroups={lessonGroups}
+          visibleGroups={visibleGroups}
+          visibleDbLessons={visibleDbLessons}
+        />
+
+        <ShellCard variant="weekly">
+          <Link className="learn-shell-weekly" to={`${ROUTES.PLAY}/daily`}>
+            <span className="learn-shell-weekly__kicker">Thử thách hàng tuần</span>
+            <span className="learn-shell-weekly__title">Ôn nhanh · nhận XP</span>
+            <span className="learn-shell-weekly__go">Vào thử thách →</span>
+          </Link>
+        </ShellCard>
+      </div>
     </aside>
   );
 }

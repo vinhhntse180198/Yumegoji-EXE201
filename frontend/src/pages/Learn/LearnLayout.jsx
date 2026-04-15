@@ -10,13 +10,6 @@ import { LearnSidebarShell } from './components/LearnSidebarShell';
 const SECTION_ORDER = ['dialogue', 'reference', 'reading', 'vocab', 'kanji', 'grammar'];
 const STATIC_SLUGS = new Set(N5_LESSONS.map((l) => l.slug));
 
-function defaultLearnCta() {
-  return {
-    ctaSlug: N5_LESSONS[0]?.slug ?? '',
-    ctaTitle: N5_LESSONS[0]?.navTitle ?? 'Bài tiếp theo',
-  };
-}
-
 /** Chỉ gọi API — không setState (tránh cảnh báo React Compiler trong useEffect). */
 async function fetchLearnLayoutSnapshot(isAuthenticated) {
   try {
@@ -29,7 +22,6 @@ async function fetchLearnLayoutSnapshot(isAuthenticated) {
         publishedFromDb: list,
         sidebarTotal: 0,
         sidebarDone: 0,
-        ...defaultLearnCta(),
       };
     }
 
@@ -50,62 +42,16 @@ async function fetchLearnLayoutSnapshot(isAuthenticated) {
       if (st === 'completed' || pct >= 100) done++;
     }
 
-    const sorted = [...list].sort((a, b) => {
-      const la = a.levelId ?? a.LevelId ?? 0;
-      const lb = b.levelId ?? b.LevelId ?? 0;
-      if (la !== lb) return la - lb;
-      const sa = a.sortOrder ?? a.SortOrder ?? 0;
-      const sb = b.sortOrder ?? b.SortOrder ?? 0;
-      if (sa !== sb) return sa - sb;
-      return (a.id ?? a.Id) - (b.id ?? b.Id);
-    });
-    let first = null;
-    for (const row of sorted) {
-      const id = row.id ?? row.Id;
-      const p = progressMap.get(id);
-      const st = p ? String(p.status ?? p.Status ?? '').toLowerCase() : '';
-      const pct = p ? Number(p.progressPercent ?? p.ProgressPercent ?? 0) : 0;
-      const completed = st === 'completed' || pct >= 100;
-      if (!completed) {
-        first = row;
-        break;
-      }
-    }
-
-    let ctaSlug = defaultLearnCta().ctaSlug;
-    let ctaTitle = defaultLearnCta().ctaTitle;
-    if (first) {
-      const slug = first.slug ?? first.Slug;
-      const title = first.title ?? first.Title;
-      if (slug) {
-        ctaSlug = slug;
-        ctaTitle = title || 'Tiếp tục học';
-      }
-    } else if (sorted[0]) {
-      const slug = sorted[0].slug ?? sorted[0].Slug;
-      const title = sorted[0].title ?? sorted[0].Title;
-      if (slug) {
-        ctaSlug = slug;
-        ctaTitle = title || 'Ôn tập';
-      }
-    } else {
-      ctaSlug = N5_LESSONS[0]?.slug ?? '';
-      ctaTitle = N5_LESSONS[0]?.navTitle ?? 'Bài mẫu N5';
-    }
-
     return {
       publishedFromDb: list,
       sidebarTotal: list.length,
       sidebarDone: done,
-      ctaSlug,
-      ctaTitle,
     };
   } catch {
     return {
       publishedFromDb: [],
       sidebarTotal: 0,
       sidebarDone: 0,
-      ...defaultLearnCta(),
     };
   }
 }
@@ -118,8 +64,6 @@ export default function LearnLayout() {
   const [publishedFromDb, setPublishedFromDb] = useState([]);
   const [sidebarTotal, setSidebarTotal] = useState(0);
   const [sidebarDone, setSidebarDone] = useState(0);
-  const [ctaSlug, setCtaSlug] = useState(N5_LESSONS[0]?.slug ?? '');
-  const [ctaTitle, setCtaTitle] = useState(N5_LESSONS[0]?.navTitle ?? 'Bài tiếp theo');
 
   const isLearnIndex = location.pathname === ROUTES.LEARN;
 
@@ -127,8 +71,6 @@ export default function LearnLayout() {
     setPublishedFromDb(snap.publishedFromDb);
     setSidebarTotal(snap.sidebarTotal);
     setSidebarDone(snap.sidebarDone);
-    setCtaSlug(snap.ctaSlug);
-    setCtaTitle(snap.ctaTitle);
   }, []);
 
   const reloadLearnLayoutData = useCallback(() => {
@@ -214,8 +156,6 @@ export default function LearnLayout() {
           lessonGroups={lessonGroups}
           visibleGroups={visibleGroups}
           visibleDbLessons={visibleDbLessons}
-          ctaSlug={ctaSlug}
-          ctaTitle={ctaTitle}
         />
 
         <main className="learn-layout__main learn-layout__main--shodo">

@@ -15,6 +15,9 @@
   --color-primary: var(--learn-shodo-red);
   --color-primary-hover: var(--learn-shodo-red-hover);
   --color-primary-soft: rgba(183, 32, 37, 0.12);
+  /* Mẫu Hanami — ảnh người dùng: sakura (thử thách), phố đêm (banner AI) */
+  --learn-mock-sakura: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB4WKozbJYJS9by2WBFo4jNdgEthYC_gAHmodPfFAe-RoejSdCYxqvx0S3nEehhqqRP8V89AIwauH1P5cBQTJtA60iCDLngrmEoCtSNRqMiUTvwN-zAByL_NAdFeBUwzzfGehjce4Zmpuaf1ePNJZjKO9pA5R6Lxr4A2TtF9rJiDhk5wAobtbYqTPyyoQFYGpDjUUwTgi09jScWeTSjIc_r7vceDf48o6qI-PfM0OqJdq8NlRx05O0PLKmxd2Qr5ZW-D8wVCT1M8ys');
+  --learn-mock-tokyo: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC5xEerck-FjHkBApyT_MlgEtkeiLTnECkAsvor9cGy9uXM7poaGN1G3uxf9LSQlvLVq87Mq900ousniDUNrsxFMe-0c5Gl58kZfGeLl_zP0tzVXfqYZ5b8bIkUCwyBzNkbY_4m4PvRC4dTJ2IaJU_E8B_4PtvNNNoCqVU3E1-jSAozaTeGOZzr_dbP-j6ApaXpqmlqaNL3D8C6y2MJtO0oObwo2fGxe_bJduyeE-ED1vduP5J2IEYCsd26rAEHKDHC8MSHzr-lpXU');
   margin: 0 auto;
   padding: 1rem 1.25rem 2.5rem;
   border-radius: 0;
@@ -1790,16 +1793,35 @@ html[data-theme='light'] .learn-dialogue__turn--b {
 .learn-layout__grid--shodo {
   grid-template-columns: minmax(272px, 300px) 1fr;
   gap: 1.75rem;
-  align-items: stretch;
-}
-
-.learn-layout__grid--shodo > .learn-layout__nav {
-  min-height: 0;
+  /* start: tránh hàng lưới co theo chiều cao cột phải → sidebar bị cắt giữa màn hình */
+  align-items: start;
 }
 
 @media (max-width: 900px) {
   .learn-layout__grid--shodo {
     grid-template-columns: 1fr;
+  }
+
+  /*
+   * Một cột: nếu giữ max-height + overflow:hidden + flex:1 trên .learn-sidebar__scroll,
+   * khi phần đầu sidebar cao (tabs xuống dòng) vùng scroll bị co về 0 → mất danh sách bài,
+   * thử thách, CTA; khối <main> nằm dưới nhưng người dùng tưởng “mất phần dưới”.
+   */
+  .learn-layout--shodo .learn-layout__nav.learn-sidebar {
+    position: static;
+    top: auto;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .learn-sidebar.learn-sidebar--shell {
+    max-height: none;
+  }
+
+  .learn-sidebar--shell .learn-sidebar__scroll {
+    flex: none;
+    min-height: unset;
+    overflow-y: visible;
   }
 }
 
@@ -1807,26 +1829,165 @@ html[data-theme='light'] .learn-dialogue__turn--b {
   min-width: 0;
 }
 
-/* Sidebar */
+/* Sidebar — cột nhiều thẻ (mẫu Hanami); cuộn một lớp trên aside */
 .learn-layout--shodo .learn-layout__nav.learn-sidebar {
   display: flex;
   flex-direction: column;
   gap: 0;
-  padding: 0;
-  max-height: calc(100vh - 5rem);
-  background: #fff;
-  border-radius: 18px;
-  border: 1px solid #e8eaef;
-  box-shadow:
-    0 4px 6px -1px rgba(15, 23, 42, 0.05),
-    0 10px 28px -8px rgba(15, 23, 42, 0.08);
-  overflow: hidden;
+  padding: 0.1rem 0 1rem;
+  align-self: start;
+  min-height: min-content;
+  max-width: 300px;
+  max-height: calc(100dvh - 4.75rem);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-padding-bottom: 1.25rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, #64748b 35%, transparent) transparent;
 }
 
-html[data-theme='dark'] .learn-layout--shodo .learn-layout__nav.learn-sidebar {
+/* Không dùng min-height: 0 — flex con co theo aside max-height → cắt mất thẻ cuối (CTA) */
+.learn-shell-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  min-height: min-content;
+  padding-bottom: 1.5rem;
+  box-sizing: border-box;
+}
+
+.learn-layout--shodo .learn-layout__nav.learn-sidebar > .learn-shell-stack {
+  flex-shrink: 0;
+}
+
+.learn-shell-card {
+  flex-shrink: 0;
+  border-radius: 20px;
+  padding: 0.7rem 0.75rem;
+  background: #fff;
+  border: 1px solid #e8eaef;
+  box-shadow:
+    0 4px 6px -1px rgba(15, 23, 42, 0.06),
+    0 12px 28px -10px rgba(15, 23, 42, 0.1);
+}
+
+html[data-theme='dark'] .learn-shell-card {
   background: var(--color-surface);
   border-color: var(--color-border);
   box-shadow: var(--shadow);
+}
+
+.learn-shell-card--user .learn-sidebar__back {
+  padding-left: 0;
+  padding-top: 0.1rem;
+}
+
+.learn-shell-card--user .learn-shell-user {
+  margin: 0.35rem 0 0;
+}
+
+.learn-shell-card--jlpt {
+  padding: 0.65rem 0.7rem;
+}
+
+.learn-shell-card--jlpt .learn-shell-jlpt {
+  margin: 0;
+}
+
+.learn-shell-card--jlpt .learn-shell-jlpt__item {
+  background: #f8fafc;
+}
+
+.learn-shell-card--jlpt .learn-shell-jlpt__item--current {
+  background: #fff1f2;
+}
+
+.learn-shell-card--jlpt .learn-shell-jlpt__item--done {
+  background: #f0fdf4;
+}
+
+.learn-shell-card--jlpt .learn-shell-jlpt__item--locked {
+  background: #f1f5f9;
+}
+
+html[data-theme='dark'] .learn-shell-card--jlpt .learn-shell-jlpt__item {
+  background: var(--color-surface-alt);
+}
+
+html[data-theme='dark'] .learn-shell-card--jlpt .learn-shell-jlpt__item--current {
+  background: color-mix(in srgb, var(--learn-shodo-red) 22%, var(--color-surface));
+}
+
+html[data-theme='dark'] .learn-shell-card--jlpt .learn-shell-jlpt__item--done {
+  background: color-mix(in srgb, #22c55e 16%, var(--color-surface-alt));
+}
+
+html[data-theme='dark'] .learn-shell-card--jlpt .learn-shell-jlpt__item--locked {
+  background: var(--color-surface);
+}
+
+.learn-shell-card--filters .learn-shell-cats-label {
+  margin: 0 0 0.4rem;
+}
+
+.learn-shell-card--filters .learn-shell-cats {
+  margin: 0;
+  padding-bottom: 0.5rem;
+  border-bottom: none;
+}
+
+.learn-shell-card--filters .learn-shell-roadmap {
+  margin: 0.6rem 0 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.learn-shell-card--filters .learn-shell-cats__btn {
+  border-radius: 12px;
+}
+
+.learn-shell-card--lessons {
+  padding: 0.55rem 0.5rem 0.65rem;
+}
+
+.learn-shell-card--lessons .learn-sidebar__list-label {
+  padding: 0.2rem 0.35rem 0.35rem;
+  margin: 0;
+}
+
+.learn-shell-card--lessons .learn-nav__tabs--shell {
+  padding-left: 0.35rem;
+  padding-right: 0.35rem;
+}
+
+.learn-shell-card--lessons .learn-sidebar__scroll {
+  margin-top: 0.15rem;
+}
+
+.learn-shell-card--weekly {
+  padding: 0;
+  overflow: hidden;
+}
+
+.learn-layout--shodo .learn-layout__nav.learn-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.learn-layout--shodo .learn-layout__nav.learn-sidebar::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, #64748b 40%, transparent);
+  border-radius: 999px;
+}
+
+html[data-theme='dark'] .learn-layout--shodo .learn-layout__nav.learn-sidebar {
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 
 .learn-sidebar__back {
@@ -2007,38 +2168,13 @@ html[data-theme='dark'] .learn-layout--shodo .learn-sidebar .learn-nav__tab--act
   scrollbar-width: thin;
 }
 
-.learn-sidebar__cta {
-  flex-shrink: 0;
-  margin: 0.5rem 0.75rem 0.75rem;
-  padding: 0.85rem 1rem;
-  border-radius: 14px;
-  text-decoration: none;
-  background: linear-gradient(145deg, var(--color-primary), var(--color-primary-hover));
-  color: #fff !important;
-  box-shadow: 0 8px 22px color-mix(in srgb, var(--color-primary) 38%, transparent);
-  transition: transform 0.12s ease, filter 0.12s ease;
-}
-
-.learn-sidebar__cta:hover {
-  filter: brightness(1.05);
-  transform: translateY(-1px);
-}
-
-.learn-sidebar__cta-kicker {
-  display: block;
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  opacity: 0.92;
-  margin-bottom: 0.25rem;
-}
-
-.learn-sidebar__cta-title {
-  display: block;
-  font-size: 0.82rem;
-  font-weight: 700;
-  line-height: 1.35;
+/* Shell: danh sách cuộn cùng cột aside — không cuộn lồng trong thẻ lessons */
+.learn-layout--shodo .learn-sidebar--shell .learn-sidebar__scroll {
+  flex: none;
+  min-height: 0;
+  max-height: none;
+  overflow-x: visible;
+  overflow-y: visible;
 }
 
 /* Dashboard main (index) */
@@ -3145,19 +3281,11 @@ html[data-theme='dark'] .learn-view-toggle__btn {
   background: linear-gradient(90deg, var(--learn-shodo-red, #b72025), #f87171);
 }
 
-/* Sidebar shell (JLPT + phân loại + thử thách) */
+/* Sidebar shell (JLPT + phân loại + thử thách) — chiều cao/cuộn do .learn-layout__nav.learn-sidebar */
 .learn-sidebar.learn-sidebar--shell {
   display: flex;
   flex-direction: column;
-  min-height: 0;
-  max-height: calc(100vh - 5rem);
   gap: 0;
-}
-
-.learn-sidebar--shell .learn-sidebar__scroll {
-  flex: 1 1 auto;
-  min-height: 72px;
-  overflow-y: auto;
 }
 
 .learn-nav__tabs--shell {
@@ -3347,23 +3475,28 @@ html[data-theme='dark'] .learn-shell-cats__btn--active {
   box-shadow: 0 4px 14px rgba(183, 32, 37, 0.12);
 }
 
-.learn-shell-weekly {
-  margin: 0.35rem 0.75rem 0.5rem;
-  padding: 0.85rem 0.9rem;
-  border-radius: 16px;
-  text-decoration: none;
-  color: #fff !important;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent),
-    linear-gradient(160deg, #9f1239, #4c0519 90%);
-  box-shadow: 0 8px 22px rgba(76, 5, 25, 0.35);
+.learn-shell-card--weekly .learn-shell-weekly {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
+  margin: 0;
+  min-height: 11rem;
+  padding: 1rem 1rem 0.95rem;
+  border-radius: inherit;
+  text-decoration: none;
+  color: #fff !important;
+  justify-content: flex-end;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+  background:
+    linear-gradient(to top, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.42) 48%, transparent 78%),
+    var(--learn-mock-sakura, linear-gradient(160deg, #9f1239, #4c0519 90%));
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.28);
 }
 
-.learn-shell-weekly:hover {
-  filter: brightness(1.06);
+.learn-shell-card--weekly .learn-shell-weekly:hover {
+  filter: brightness(1.05);
 }
 
 .learn-shell-weekly__kicker {
@@ -3449,10 +3582,12 @@ html[data-theme='dark'] .learn-shell-cats__btn--active {
 .learn-ai-promo__art {
   border-radius: 14px;
   min-height: 120px;
-  background:
-    linear-gradient(145deg, rgba(251, 113, 133, 0.35), transparent 55%),
-    radial-gradient(circle at 70% 100%, rgba(254, 240, 138, 0.25), transparent 50%),
-    linear-gradient(180deg, #1e293b, #0f172a);
+  background-image:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.5), transparent 52%),
+    linear-gradient(to top, rgba(15, 23, 42, 0.55), transparent 40%),
+    var(--learn-mock-tokyo, linear-gradient(180deg, #1e293b, #0f172a));
+  background-size: cover;
+  background-position: center;
 }
 
 @media (max-width: 720px) {

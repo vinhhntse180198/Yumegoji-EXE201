@@ -5,6 +5,8 @@ import { chatService } from '../../services/chatService';
 import { notifyChatInboxRevised } from '../../hooks/useChatUnreadTotal';
 import { mergeJoinedForAcl } from '../../utils/chatRoomAcl';
 import { useAuth } from '../../hooks/useAuth';
+import { ROUTES } from '../../data/routes';
+import { getJlptLevelCodeFromUser } from '../../utils/learnLevelCode';
 
 function safeArray(val) {
   return Array.isArray(val) ? val : [];
@@ -30,42 +32,9 @@ function typeMeta(typeRaw) {
   return { key: t || 'other', label: String(typeRaw || 'Phòng') };
 }
 
-/** Minh họa phẳng (phòng khách) — tương tự mẫu Modern Chat Hub */
-function ChatHubHeroIllustration() {
-  return (
-    <svg
-      className="moji-chat__discover-hero-svg"
-      viewBox="0 0 420 280"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <defs>
-        <linearGradient id="chub-sky" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#bae6fd" />
-          <stop offset="100%" stopColor="#e0f2fe" />
-        </linearGradient>
-      </defs>
-      <rect width="420" height="280" rx="18" fill="#fff4e6" />
-      <rect x="24" y="36" width="120" height="88" rx="10" fill="#fff" stroke="#fde68a" strokeWidth="2" />
-      <rect x="32" y="44" width="104" height="72" rx="6" fill="url(#chub-sky)" />
-      <rect x="160" y="48" width="236" height="8" rx="4" fill="#fed7aa" opacity="0.55" />
-      <ellipse cx="210" cy="248" rx="170" ry="22" fill="#f5e0d0" opacity="0.65" />
-      <rect x="72" y="168" width="200" height="56" rx="14" fill="#d4a574" />
-      <rect x="64" y="188" width="216" height="36" rx="12" fill="#c49a6c" />
-      <circle cx="130" cy="132" r="22" fill="#fecdd3" />
-      <ellipse cx="130" cy="178" rx="28" ry="36" fill="#fda4af" />
-      <circle cx="210" cy="118" r="24" fill="#fde68a" />
-      <ellipse cx="210" cy="172" rx="30" ry="40" fill="#fcd34d" />
-      <circle cx="292" cy="128" r="22" fill="#bbf7d0" />
-      <ellipse cx="292" cy="176" rx="28" ry="38" fill="#86efac" />
-      <rect x="320" y="156" width="36" height="52" rx="6" fill="#a78bfa" opacity="0.35" />
-      <rect x="332" y="132" width="12" height="28" rx="3" fill="#fde047" opacity="0.9" />
-      <circle cx="338" cy="124" r="16" fill="#fef08a" />
-      <rect x="40" y="198" width="14" height="40" rx="3" fill="#86efac" />
-      <ellipse cx="47" cy="192" rx="20" ry="10" fill="#4ade80" />
-    </svg>
-  );
-}
+/** Ảnh hero sảnh chat (mẫu Sakura Hub — người dùng cung cấp). */
+const CHAT_LOBBY_HERO_IMAGE =
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuCiqI13wPsSaedqBDW5YO-DFhy06SHhgseBQ_poYDexBrjVwbWn_EHbiC0Y3C6LLQTByn0xD3-zHPelpT0vSrXmmWWu3ksk_jaVpDm10nN-OQtePrvgF5_vG8t_8qEzJnS9ADbO_70me5zv7RJ6VdR8xZfd8FqNlsPF-6o_o4ftknjXjaKP6cCFC45je-cXQpXsYTkfyC6uG-2sOS4a2U_M_oEwldbOjP8z6tRzT2WioSQdNCA28cQWkf7r4etAbKjMTnULh5rPS_A';
 
 export default function ChatPage() {
   const navigate = useNavigate();
@@ -73,11 +42,14 @@ export default function ChatPage() {
   const [catalog, setCatalog] = useState([]);
   const [discoverRooms, setDiscoverRooms] = useState([]);
   const [myRooms, setMyRooms] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [busyRoomId, setBusyRoomId] = useState(null);
   const [q, setQ] = useState('');
-  const [showLounge, setShowLounge] = useState(true);
+  /** 'hero' = sảnh chào (1 cột); 'app' = khung chat 3 cột trên /chat, chưa vào phòng cụ thể */
+  const [chatSurface, setChatSurface] = useState('hero');
+  /** Trong shell: có hiện bảng duyệt phòng ở cột giữa hay chỉ màn chờ chọn hội thoại */
+  const [browseRoomsOpen, setBrowseRoomsOpen] = useState(false);
   const [openMenuRoomId, setOpenMenuRoomId] = useState(null);
   const discoverRef = useRef(null);
   const discoverSearchRef = useRef(null);
@@ -138,10 +110,6 @@ export default function ChatPage() {
       setLoading(false);
     }
   }, [user]);
-
-  useEffect(() => {
-    loadDiscover();
-  }, [loadDiscover]);
 
   useEffect(() => {
     if (openMenuRoomId == null) return undefined;
@@ -224,73 +192,158 @@ export default function ChatPage() {
     navigate(`/chat/room/${roomId}`);
   }
 
-  return (
-    <MojiChatLayout selectedRoomId={null}>
-      <div ref={discoverRef} className="moji-chat__discover moji-chat__discover--lounge">
-        {showLounge ? (
-          <header className="moji-chat__discover-lounge">
-            <div className="moji-chat__discover-hero-panel">
-              <div className="moji-chat__discover-hero-art">
-                <ChatHubHeroIllustration />
-              </div>
-              <div className="moji-chat__discover-hero-body">
-                <h1 className="moji-chat__discover-hero-title">Chào mừng bạn đến với YumeGo-ji!</h1>
-                <p className="moji-chat__discover-hero-desc">
-                  Chúng mình chào mừng bạn đến với YumeGo-ji!
-                </p>
-                <div className="moji-chat__discover-hero-actions">
-                  <button
-                    type="button"
-                    className="moji-chat__discover-hero-btn moji-chat__discover-hero-btn--primary"
-                    onClick={() => {
-                      setShowLounge(false);
-                      requestAnimationFrame(() => discoverSearchRef.current?.focus());
-                    }}
-                  >
-                    Bắt đầu trò chuyện mới
-                  </button>
-                  <button
-                    type="button"
-                    className="moji-chat__discover-hero-btn moji-chat__discover-hero-btn--ghost"
-                    onClick={() => {
-                      setShowLounge(false);
-                      void loadDiscover();
-                    }}
-                  >
-                    Khám phá cộng đồng
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div className="moji-chat__discover-feature-grid">
-              <article className="moji-chat__discover-feature">
-                <span className="moji-chat__discover-feature-ico" aria-hidden>
-                  💬
-                </span>
-                <h3>Học ngôn ngữ</h3>
-                <p>Trao đổi tự nhiên cùng bạn học.</p>
-              </article>
-              <article className="moji-chat__discover-feature">
-                <span className="moji-chat__discover-feature-ico" aria-hidden>
-                  👥
-                </span>
-                <h3>Phòng học ảo</h3>
-                <p>Tham gia nhóm tập trung, thảo luận.</p>
-              </article>
-              <article className="moji-chat__discover-feature">
-                <span className="moji-chat__discover-feature-ico moji-chat__discover-feature-ico--ai" aria-hidden>
-                  AI
-                </span>
-                <h3>Tư vấn AI</h3>
-                <p>Nhận gợi ý mở đầu hội thoại.</p>
-              </article>
-            </div>
-          </header>
-        ) : null}
+  /** Bắt đầu trò chuyện: vào luôi layout 3 cột, không mở màn duyệt phòng toàn trang */
+  function enterChatShellInbox() {
+    setChatSurface('app');
+    setBrowseRoomsOpen(false);
+  }
 
-        {!showLounge ? (
-        <>
-        <div className="moji-chat__discover-search-row">
+  function openBrowseRoomsInShell() {
+    setBrowseRoomsOpen(true);
+    void loadDiscover();
+    requestAnimationFrame(() => discoverSearchRef.current?.focus());
+  }
+
+  /** Khám phá cộng đồng / FAB / thẻ: vẫn 3 cột nhưng mở danh sách phòng trong cột giữa */
+  function openDiscoverFromLobby() {
+    setChatSurface('app');
+    setBrowseRoomsOpen(true);
+    void loadDiscover();
+    requestAnimationFrame(() => discoverSearchRef.current?.focus());
+  }
+
+  function backToHeroLobby() {
+    setChatSurface('hero');
+    setBrowseRoomsOpen(false);
+    setQ('');
+    setOpenMenuRoomId(null);
+  }
+
+  const jlptCode = getJlptLevelCodeFromUser(user);
+  const jlptProgressPct = useMemo(() => {
+    const m = { N5: 42, N4: 52, N3: 68, N2: 78, N1: 88 };
+    return m[jlptCode] ?? 50;
+  }, [jlptCode]);
+
+  if (chatSurface === 'hero') {
+    return (
+      <MojiChatLayout variant="lobby" selectedRoomId={null}>
+        <div className="chat-lobby-root">
+          <div className="chat-lobby-hub">
+            <div className="chat-lobby-hub__inner">
+              <header className="chat-lobby-hero">
+                <div className="chat-lobby-hero__copy">
+                  <p className="chat-lobby-hero__kicker">Chào mừng trở lại</p>
+                  <h1 className="chat-lobby-hero__title">
+                    Chào mừng bạn đến với <em>YumeGo-ji!</em>
+                  </h1>
+                  <p className="chat-lobby-hero__lead">
+                    Luyện nghe — nói — đọc — viết trong không gian học hiện đại. Chọn phòng phù hợp trình độ hoặc vào học
+                    có hướng dẫn.
+                  </p>
+                  <div className="chat-lobby-hero__actions">
+                    <button type="button" className="chat-lobby-btn chat-lobby-btn--primary" onClick={enterChatShellInbox}>
+                      Bắt đầu trò chuyện
+                    </button>
+                    <button type="button" className="chat-lobby-btn chat-lobby-btn--ghost" onClick={openDiscoverFromLobby}>
+                      Khám phá cộng đồng
+                    </button>
+                  </div>
+                </div>
+                <div className="chat-lobby-hero__visual">
+                  <img
+                    src={CHAT_LOBBY_HERO_IMAGE}
+                    alt="Cổng đền và hoa anh đào — minh họa không gian học"
+                    className="chat-lobby-hero__photo"
+                    loading="eager"
+                    decoding="async"
+                  />
+                  <div className="chat-lobby-hero__progress-card">
+                    <div className="chat-lobby-hero__progress-label">Tiến độ gợi ý</div>
+                    <div className="chat-lobby-hero__progress-level">{jlptCode}</div>
+                    <div className="chat-lobby-hero__progress-bar" role="presentation">
+                      <span className="chat-lobby-hero__progress-fill" style={{ width: `${jlptProgressPct}%` }} />
+                    </div>
+                    <p className="chat-lobby-hero__progress-hint">Tham gia phòng và hoàn thành bài trên Học tập để tăng tiến độ.</p>
+                  </div>
+                </div>
+              </header>
+
+              <section className="chat-lobby-features" aria-label="Lối vào nhanh">
+                <article className="chat-lobby-card">
+                  <span className="chat-lobby-card__ico" aria-hidden>
+                    💬
+                  </span>
+                  <h2 className="chat-lobby-card__title">Học ngôn ngữ</h2>
+                  <p className="chat-lobby-card__desc">Trao đổi tự nhiên cùng bạn học trong phòng theo cấp.</p>
+                  <button type="button" className="chat-lobby-card__link" onClick={() => navigate(ROUTES.LEARN)}>
+                    Tìm hiểu thêm →
+                  </button>
+                </article>
+                <article className="chat-lobby-card">
+                  <span className="chat-lobby-card__ico" aria-hidden>
+                    👥
+                  </span>
+                  <h2 className="chat-lobby-card__title">Phòng học ảo</h2>
+                  <p className="chat-lobby-card__desc">Tham gia phòng công khai hoặc nhóm — thảo luận real-time.</p>
+                  <button type="button" className="chat-lobby-card__link" onClick={openDiscoverFromLobby}>
+                    Tham gia phòng →
+                  </button>
+                </article>
+                <article className="chat-lobby-card">
+                  <span className="chat-lobby-card__ico chat-lobby-card__ico--ai" aria-hidden>
+                    AI
+                  </span>
+                  <h2 className="chat-lobby-card__title">Tư vấn AI</h2>
+                  <p className="chat-lobby-card__desc">Gợi ý mở đầu hội thoại và ôn tập nhanh khi có phòng AI.</p>
+                  <button type="button" className="chat-lobby-card__link" onClick={openDiscoverFromLobby}>
+                    Mở danh sách phòng →
+                  </button>
+                </article>
+              </section>
+            </div>
+
+            <button
+              type="button"
+              className="chat-lobby-fab"
+              title="Mở danh sách phòng chat"
+              aria-label="Mở danh sách phòng chat"
+              onClick={openDiscoverFromLobby}
+            >
+              <span aria-hidden>💬</span>
+            </button>
+          </div>
+        </div>
+      </MojiChatLayout>
+    );
+  }
+
+  return (
+    <MojiChatLayout variant="full" selectedRoomId={null}>
+      <div ref={discoverRef} className="chat-lobby-root chat-app-shell">
+        <div className="chat-app-shell__toolbar">
+          <button type="button" className="moji-chat__discover-hero-btn moji-chat__discover-hero-btn--ghost" onClick={backToHeroLobby}>
+            Về sảnh chờ
+          </button>
+          {browseRoomsOpen ? (
+            <button
+              type="button"
+              className="moji-chat__discover-hero-btn moji-chat__discover-hero-btn--ghost"
+              onClick={() => setBrowseRoomsOpen(false)}
+            >
+              Đóng danh sách phòng
+            </button>
+          ) : (
+            <button type="button" className="moji-chat__discover-hero-btn moji-chat__discover-hero-btn--primary" onClick={openBrowseRoomsInShell}>
+              Duyệt phòng công khai
+            </button>
+          )}
+        </div>
+
+        <div className="chat-app-shell__body">
+          {browseRoomsOpen ? (
+            <>
+        <div className="chat-lobby-discover moji-chat__discover-search-row">
           <label className="moji-chat__discover-search moji-chat__discover-search--pro">
             <span className="visually-hidden">Tìm phòng</span>
             <input
@@ -302,13 +355,6 @@ export default function ChatPage() {
               aria-label="Tìm phòng"
             />
           </label>
-          <button
-            type="button"
-            className="moji-chat__discover-hero-btn moji-chat__discover-hero-btn--ghost"
-            onClick={() => setShowLounge(true)}
-          >
-            Về sảnh chờ
-          </button>
         </div>
 
         {error && (
@@ -476,8 +522,20 @@ export default function ChatPage() {
             </ul>
           )}
         </section>
-        </>
-        ) : null}
+            </>
+          ) : (
+            <div className="moji-chat__empty chat-app-shell-empty" role="status">
+              <div className="moji-chat__empty-bubble" aria-hidden>
+                ···
+              </div>
+              <h2 className="moji-chat__empty-title">Chưa chọn hội thoại</h2>
+              <p className="moji-chat__empty-desc">
+                Bạn đang ở khung chat — chọn một phòng hoặc bạn bè ở cột trái để mở tin nhắn, hoặc bấm &quot;Duyệt phòng công
+                khai&quot; để tham gia phòng mới. Bạn chưa bị đưa vào phòng nào cho đến khi bấm vào đó.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </MojiChatLayout>
   );
