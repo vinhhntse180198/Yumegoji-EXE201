@@ -5,6 +5,7 @@ using backend.Services.AI;
 using backend.Services.Admin;
 using backend.Services.Assessment;
 using backend.Services.Auth;
+using backend.Services.Email;
 using backend.Hubs;
 using backend.Services.Chat;
 using backend.Services.Chatbot;
@@ -48,6 +49,7 @@ namespace backend
             });
 
             // YUMEGO-JI: Đăng ký 10 mô-đun theo đặc tả hệ thống
+            builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<ILearningService, LearningService>();
             builder.Services.AddScoped<IAssessmentService, AssessmentService>();

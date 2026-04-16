@@ -24,6 +24,7 @@ public class ApplicationDbContext : DbContext
     }
 
     public DbSet<User> Users => Set<User>();
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
     public DbSet<Level> Levels => Set<Level>();
     public DbSet<UserProfile> UserProfiles => Set<UserProfile>();
     public DbSet<ChatRoom> ChatRooms => Set<ChatRoom>();

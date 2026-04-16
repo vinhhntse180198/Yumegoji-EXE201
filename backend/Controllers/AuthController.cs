@@ -28,6 +28,37 @@ public class AuthController : ControllerBase
         _env = env;
     }
 
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+    {
+        var email = request?.Email?.Trim();
+        if (string.IsNullOrEmpty(email))
+            return BadRequest(new { message = "Vui lòng nhập email." });
+
+        var result = await _authService.RequestPasswordResetAsync(email);
+        const string msg =
+            "Nếu email đã được đăng ký trên hệ thống, bạn sẽ nhận được hướng dẫn đặt lại mật khẩu (kiểm tra hộp thư hoặc liên hệ hỗ trợ).";
+        if (_env.IsDevelopment() && !string.IsNullOrEmpty(result.DevelopmentResetUrl))
+            return Ok(new { message = msg, resetUrl = result.DevelopmentResetUrl });
+        return Ok(new { message = msg });
+    }
+
+    [HttpPost("reset-password")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        try
+        {
+            await _authService.ResetPasswordWithTokenAsync(request?.Token ?? "", request?.NewPassword ?? "");
+            return Ok(new { message = "Đặt lại mật khẩu thành công. Bạn có thể đăng nhập." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
     [HttpPost("register")]
     [AllowAnonymous]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
@@ -50,6 +81,21 @@ public class AuthController : ControllerBase
         try
         {
             var result = await _authService.LoginAsync(request);
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPost("google")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequest request)
+    {
+        try
+        {
+            var result = await _authService.LoginWithGoogleAsync(request?.IdToken ?? string.Empty);
             return Ok(result);
         }
         catch (InvalidOperationException ex)

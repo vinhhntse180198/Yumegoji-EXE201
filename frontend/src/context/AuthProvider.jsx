@@ -62,6 +62,15 @@ export function AuthProvider({ children }) {
     return data;
   }, []);
 
+  const loginWithGoogle = useCallback(async (payload) => {
+    const data = await authService.loginWithGoogle(payload);
+    setUser(data.user || authService.getStoredUser());
+    if (typeof data?.needsPlacementTest === 'boolean') {
+      setNeedsPlacementTest(!!data.needsPlacementTest);
+    }
+    return data;
+  }, []);
+
   const logout = useCallback(() => {
     authService.logout();
     setUser(null);
@@ -74,6 +83,7 @@ export function AuthProvider({ children }) {
     loading,
     isAuthenticated: !!user,
     login,
+    loginWithGoogle,
     logout,
     checkAuth,
     needsPlacementTest,

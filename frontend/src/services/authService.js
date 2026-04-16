@@ -1,6 +1,7 @@
 /**
  * Service đăng nhập / đăng ký / lấy thông tin user — gọi authApi + storage.
  */
+/* eslint-env browser */
 import { authApi } from '../api/authApi';
 import { storage } from '../utils/storage';
 import { isStaffUser } from '../utils/roles';
@@ -26,7 +27,9 @@ function parseJwtUserId(token) {
     let b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
     const pad = b64.length % 4;
     if (pad) b64 += '='.repeat(4 - pad);
-    const payload = JSON.parse(atob(b64));
+    const decodeB64 = globalThis['atob'];
+    if (typeof decodeB64 !== 'function') return null;
+    const payload = JSON.parse(decodeB64(b64));
     const raw =
       payload.sub ??
       payload.nameid ??
@@ -76,6 +79,36 @@ export const authService = {
     };
     const { data } = await authApi.register(payload);
     return data;
+  },
+
+  /** POST /api/Auth/forgot-password — luôn thông báo trung lập; dev có thể có resetUrl. */
+  async forgotPassword({ email } = {}) {
+    const { data } = await authApi.forgotPassword({ email: email ?? '' });
+    return data;
+  },
+
+  /** POST /api/Auth/reset-password */
+  async resetPassword({ token, newPassword } = {}) {
+    const { data } = await authApi.resetPassword({
+      token: token ?? '',
+      newPassword: newPassword ?? '',
+    });
+    return data;
+  },
+
+  /** POST /api/Auth/google — credential JWT từ Google Identity Services. */
+  async loginWithGoogle({ idToken } = {}) {
+    const { data } = await authApi.googleLogin({ idToken: idToken ?? '' });
+    if (data?.accessToken) {
+      storage.set(TOKEN_KEY, data.accessToken);
+      if (data.user) storage.set(USER_KEY, normalizeUserShape(data.user));
+      if (typeof data.needsPlacementTest === 'boolean') {
+        const u = data.user ? normalizeUserShape(data.user) : normalizeUserShape(storage.get(USER_KEY));
+        storage.set(NEEDS_PLACEMENT_KEY, isStaffUser(u) ? false : !!data.needsPlacementTest);
+      }
+      return data?.user ? { ...data, user: normalizeUserShape(data.user) } : data;
+    }
+    throw new Error(data?.message || 'Đăng nhập Google thất bại');
   },
 
   /**

@@ -7,6 +7,8 @@ public class User
     public int Id { get; set; }
     public string Username { get; set; } = null!;
     public string Email { get; set; } = null!;
+    /// <summary>Google JWT claim <c>sub</c> — liên kết OAuth (nullable).</summary>
+    public string? GoogleSub { get; set; }
     public string? PasswordHash { get; set; }
     public string Role { get; set; } = "user";
     public int? LevelId { get; set; }

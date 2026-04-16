@@ -14,6 +14,7 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
         entity.Property(u => u.Id).HasColumnName("id");
         entity.Property(u => u.Username).HasColumnName("username").HasMaxLength(50);
         entity.Property(u => u.Email).HasColumnName("email").HasMaxLength(255);
+        entity.Property(u => u.GoogleSub).HasColumnName("google_sub").HasMaxLength(255);
         entity.Property(u => u.PasswordHash).HasColumnName("password_hash").HasMaxLength(255);
         entity.Property(u => u.Role).HasColumnName("role").HasMaxLength(20);
         entity.Property(u => u.LevelId).HasColumnName("level_id");
@@ -30,6 +31,10 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
         entity.Property(u => u.UpdatedAt).HasColumnName("updated_at");
         entity.Property(u => u.DeletedAt).HasColumnName("deleted_at");
         entity.Property(u => u.IsPremium).HasColumnName("is_premium");
+        entity.HasIndex(u => u.GoogleSub)
+            .IsUnique()
+            .HasDatabaseName("UX_users_google_sub")
+            .HasFilter("[google_sub] IS NOT NULL");
     }
 }
 

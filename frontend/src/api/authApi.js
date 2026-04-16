@@ -5,6 +5,12 @@ export const authApi = {
 
   register: (payload) => http.post(API_ENDPOINTS.AUTH.REGISTER, payload),
 
+  forgotPassword: (payload) => http.post(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, payload),
+
+  resetPassword: (payload) => http.post(API_ENDPOINTS.AUTH.RESET_PASSWORD, payload),
+
+  googleLogin: (payload) => http.post(API_ENDPOINTS.AUTH.GOOGLE, payload),
+
   getUserById: (id) => http.get(`${API_ENDPOINTS.USER.USERS}/${id}`),
 
   adminListUsers: () => http.get(API_ENDPOINTS.USER.USERS),

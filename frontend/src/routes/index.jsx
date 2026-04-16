@@ -8,6 +8,8 @@ import { ModeratorRoute } from './guards/ModeratorRoute';
 const Homepage = lazy(() => import('../pages/Homepage'));
 const Login = lazy(() => import('../pages/Login'));
 const Register = lazy(() => import('../pages/Register'));
+const ForgotPassword = lazy(() => import('../pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('../pages/ResetPassword'));
 const Dashboard = lazy(() => import('../pages/Dashboard'));
 const PlacementTest = lazy(() => import('../pages/PlacementTest'));
 const LevelUpTest = lazy(() => import('../pages/LevelUpTest'));
@@ -40,6 +42,8 @@ function AppRoutes() {
         <Route path={ROUTES.HOME} element={<Homepage />} />
         <Route path={ROUTES.LOGIN} element={<Login />} />
         <Route path={ROUTES.REGISTER} element={<Register />} />
+        <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPassword />} />
+        <Route path={ROUTES.RESET_PASSWORD} element={<ResetPassword />} />
         <Route
           path={ROUTES.DASHBOARD}
           element={
