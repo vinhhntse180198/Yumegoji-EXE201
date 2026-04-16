@@ -2670,19 +2670,26 @@ html[data-theme='dark'] .app--learner .app-main--learner {
   height: 56px;
   border-radius: 999px;
   border: none;
-  background: linear-gradient(145deg, #6d28d9, #4f46e5);
+  background: linear-gradient(180deg, #ffffff 0%, #eef2ff 100%);
   color: #fff;
   cursor: pointer;
   box-shadow:
-    0 10px 28px rgba(79, 70, 229, 0.4),
-    0 0 0 2px rgba(255, 255, 255, 0.35);
+    0 10px 28px rgba(79, 70, 229, 0.28),
+    0 0 0 2px rgba(255, 255, 255, 0.65);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  padding: 0;
 }
 
-.support-chat-fab__icon {
+.support-chat-fab__mascot {
   display: block;
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  object-position: center bottom;
+  pointer-events: none;
 }
 
 .support-chat-fab__hint {
@@ -2889,12 +2896,4 @@ html[data-theme='dark'] .app--learner .app-main--learner {
 .support-chat-panel__form button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-.support-chat-panel__foot {
-  margin: 0;
-  padding: 0 0.85rem 0.75rem;
-  font-size: 0.72rem;
-  color: var(--text);
-  opacity: 0.8;
 }

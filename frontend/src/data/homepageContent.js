@@ -1,6 +1,21 @@
 /** Ảnh mẫu theo link bạn cung cấp */
 const HERO_IMAGE_SRC =
   'https://lh3.googleusercontent.com/aida-public/AB6AXuDLA_MHEzHCfY-5kJAe4FDu1hRrb1cV8NHy0Feg9-6lZRIuJ_BKNddEexbfLE4jLLSFx6X9wVv3oCoGH_WSyhiEAsixgZSbC2y6CcZdEaGw7YmAMT_cMLrHmrFJg88D8-k_HkZy3GxOCO_x84qngV-kvX7toI4QLvOLRtJjsRX33AXnJF_bCPRpxdskgpSn28L3bxC8YsnaxlBIOZx-QjyuT79Avq0u6IR0SniXpbuMVnU5qzJyocL5e7aWgN0vEhzOnp3VAj_51HM';
+
+/** Slide hero — link bài báo HTML không dùng làm src ảnh */
+const HERO_SLIDE_GOOGLE_1 =
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuC3Ju_oFqE7vhueOnoRV2DE6LQMag2sV-_Pn70RrjHxzfqLZgiPul68BJwpAM7qxlxXi4SXV1HBlI0Vr6-OPFAtipgQIO3HCinqZb5P6E3UHWO_V66iLThyOsOHqIXqziVtM4EbDLxlhXKebsUpuKgS3xOTTk3qLLCn_6GXqpsL0cNG3ENY7b86u2QdDjOjmkoVn05I3Y6anpBFu2FYgkm-YBOvmE3aX8VQ6lJiDZfrXIXoCxOtEogai-h9CZROLNDLdeu4QnSTgHo';
+const HERO_SLIDE_GOOGLE_2 =
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuBVTHYikuZH0p7u2VCJV4qI-wu_3DW0qy1-EjnWqAmqyUKdRzHNQAM9GXSCjCZvLnCgSzIsD9GHwR5swUyXr2lpEkNu_QJmMZc2IFGPO7OlB6I-49dkWSL6CFOeaUaSQVuNiZT137-CaSBs9AqyOpK1YQ5zCE-SQshPbR6dxzed2JeyZjAWHHbvxSCaoxKTdZ5Z5XUFHI-HWSjqErRVHUcX_Vt3_xULtdOpR4ar4q7CMzm9ERrDqSXR29ITa1Ur5WES4mQW_rl0YJY';
+
+export const HOMEPAGE_HERO_SLIDES = [
+  HERO_SLIDE_GOOGLE_1,
+  HERO_SLIDE_GOOGLE_2,
+  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQaJS75BriGErLn_04I_XxxvUrdsMSE9fqFqw&s',
+  'https://riki.edu.vn/goc-chia-se/wp-content/uploads/2020/06/thong-tin-nhat-ban-13-2.jpg',
+  'https://kenh14cdn.com/2020/2/19/weroadofficial733126915670472273724112180452872398754856n-15820945105671173864668.jpg',
+  HERO_IMAGE_SRC,
+];
 const WHY_IMAGE_CITY =
   'https://lh3.googleusercontent.com/aida-public/AB6AXuCYa70aIBMvItlNHTnzM7sykqn5DQDjN0OrK-nh3fcXoJZOQxuugTujAt6FlueOa_ikoTu02l_n5Rk1yk1jKk9pWAaanGXIjKvLI1vOPWAFBturyFynMXqEjXI-qLAuLnSMelKj6PDBXBGF5Zpit0U414HeBjhGwxNb_V0LBLJBQmXOYeUXZ8oFywUDa58_hWTJpDjQIKvhpRL2PlYebo3wgW7IeuFIxefNuz2py5dDBpm3TIEUpYD-uPFtfo8qxpKEBq5a1d0asP8';
 const WHY_IMAGE_PAGODA =
@@ -17,6 +32,8 @@ export const HOMEPAGE_HERO = {
   metricLabel: 'Tiến độ tuần này',
   metricValue: '+120 Kanji mới',
   image: HERO_IMAGE_SRC,
+  /** Ảnh carousel bên phải hero */
+  slides: HOMEPAGE_HERO_SLIDES,
 };
 
 export const HOMEPAGE_METHOD = {
@@ -98,6 +115,11 @@ export const HOMEPAGE_TESTIMONIALS = {
     },
   ],
 };
+
+/** Cùng 3 ảnh học viên mẫu như footer — khối “Joined by…” đăng nhập / đăng ký / đặt lại MK */
+export const AUTH_HERO_LEARNER_AVATAR_URLS = HOMEPAGE_TESTIMONIALS.items
+  .filter((i) => i.avatarUrl)
+  .map((i) => i.avatarUrl);
 
 export const HOMEPAGE_CTA = {
   title: 'Sẵn sàng để bắt đầu chưa?',

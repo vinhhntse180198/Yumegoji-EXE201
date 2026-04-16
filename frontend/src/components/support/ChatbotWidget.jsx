@@ -87,14 +87,14 @@ export function ChatbotWidget() {
           aria-label="Trợ lý học tiếng Nhật và hỗ trợ"
           onClick={() => setOpen((o) => !o)}
         >
-          <svg className="support-chat-fab__icon" width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="5" y="9" width="14" height="10" rx="2" fill="currentColor" opacity="0.95" />
-            <circle cx="9" cy="13" r="1.2" fill="#1e1b4b" />
-            <circle cx="15" cy="13" r="1.2" fill="#1e1b4b" />
-            <path d="M9 16h6" stroke="#1e1b4b" strokeWidth="1.2" strokeLinecap="round" />
-            <path d="M12 4v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.85" />
-            <circle cx="12" cy="3" r="1.2" fill="currentColor" opacity="0.85" />
-          </svg>
+          <img
+            className="support-chat-fab__mascot"
+            src={`${import.meta.env.BASE_URL}chatbot-mascot.png`}
+            alt=""
+            width={52}
+            height={52}
+            decoding="async"
+          />
         </button>
       </div>
 
@@ -165,11 +165,6 @@ export function ChatbotWidget() {
               Gửi
             </button>
           </div>
-          {!isAuthenticated ? (
-            <p className="support-chat-panel__foot">
-              Khách chỉ dùng chatbot tại đây. Đăng ký để mở chat với điều hành viên và chat với học viên khác.
-            </p>
-          ) : null}
         </aside>
       )}
     </>

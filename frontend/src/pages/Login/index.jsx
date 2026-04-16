@@ -9,6 +9,7 @@ import { getPostLoginRoute } from '../../utils/postLoginRoute';
 import { isStaffUser } from '../../utils/roles';
 import { isRequired, isEmail } from '../../utils/validators';
 import { AuthSakuraLayer } from '../../components/auth/AuthSakuraLayer';
+import { AuthHeroAvatars } from '../../components/auth/AuthHeroAvatars';
 import {
   loginShellVariants,
   loginStaggerParent,
@@ -44,6 +45,30 @@ function IconLock() {
         strokeWidth="1.6"
         strokeLinecap="round"
       />
+    </svg>
+  );
+}
+
+function IconGoogleG() {
+  return (
+    <svg className="auth-google-fallback-pill__g" width="20" height="20" viewBox="0 0 48 48" aria-hidden>
+      <path
+        fill="#EA4335"
+        d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+      />
+      <path
+        fill="#4285F4"
+        d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+      />
+      <path
+        fill="#34A853"
+        d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+      />
+      <path fill="none" d="M0 0h48v48H0z" />
     </svg>
   );
 }
@@ -192,7 +217,7 @@ export default function Login() {
 
   return (
     <div className="auth-page auth-page--animated-login">
-      <AuthSakuraLayer count={28} />
+      <AuthSakuraLayer count={36} />
 
       <Motion.div
         className="auth-shell auth-shell--v3"
@@ -200,26 +225,16 @@ export default function Login() {
         initial="hidden"
         animate="visible"
       >
-        <Motion.section
-          className="auth-left auth-left--photo auth-left--v3"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <Motion.div className="auth-left__glass" variants={loginHeroGlass} initial="hidden" animate="visible">
+        <Motion.section className="auth-left auth-left--photo auth-left--v3">
+          <Motion.div className="auth-left__hero-copy" variants={loginHeroGlass} initial="hidden" animate="visible">
             <h2 className="auth-left__title">
               Master the Art of <span className="auth-left__accent">Japanese</span>
             </h2>
             <p className="auth-left__desc">
-              Join thousands of learners on a journey through JLPT levels, kanji, and culture — curated with care on
-              YumeGo-ji.
+              Join thousands of learners on a journey through grammar, kanji, and culture — with care on YumeGo-ji.
             </p>
-            <div className="auth-left__glass-footer" aria-hidden="true">
-              <div className="auth-avatars">
-                <span className="auth-avatar" />
-                <span className="auth-avatar" />
-                <span className="auth-avatar" />
-              </div>
+            <div className="auth-left__hero-footer" aria-hidden="true">
+              <AuthHeroAvatars />
               <div>
                 Joined by <strong>12,000+</strong> learners
               </div>
@@ -253,7 +268,12 @@ export default function Login() {
               initial="hidden"
               animate="visible"
             >
-              <Motion.div className="input-group" variants={loginStaggerItem}>
+              <Motion.div
+                className="input-group input-group--auth-motion"
+                variants={loginStaggerItem}
+                whileHover={{ y: -2 }}
+                transition={{ type: 'spring', stiffness: 420, damping: 28 }}
+              >
                 <label htmlFor="login-email" className="input-label">
                   Email address
                 </label>
@@ -274,12 +294,17 @@ export default function Login() {
                 </div>
               </Motion.div>
 
-              <Motion.div className="input-group" variants={loginStaggerItem}>
+              <Motion.div
+                className="input-group input-group--auth-motion"
+                variants={loginStaggerItem}
+                whileHover={{ y: -2 }}
+                transition={{ type: 'spring', stiffness: 420, damping: 28 }}
+              >
                 <div className="auth-row">
                   <label htmlFor="login-password" className="input-label">
                     Password
                   </label>
-                  <Link className="auth-link" to={ROUTES.FORGOT_PASSWORD}>
+                  <Link className="auth-link" to={ROUTES.RESET_PASSWORD}>
                     Forgot password?
                   </Link>
                 </div>
@@ -329,19 +354,36 @@ export default function Login() {
             </Motion.div>
           </form>
 
-          <Motion.div className="auth-google-only" variants={loginStaggerItem}>
+          <Motion.div
+            className="auth-google-only"
+            variants={loginStaggerItem}
+            whileHover={{ y: -1 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+          >
             <p className="auth-google-only__label">Đăng nhập với</p>
-            {VITE_GOOGLE_CLIENT_ID ? (
-              <div className="auth-google-pill-wrap">
+            <div className="auth-google-pill-wrap">
+              {VITE_GOOGLE_CLIENT_ID ? (
                 <div ref={googleBtnRef} className="auth-google-mount auth-google-mount--pill" />
-              </div>
-            ) : (
-              <p className="auth-login-hint auth-login-hint--center">
-                Chưa cấu hình <code>VITE_GOOGLE_CLIENT_ID</code> (frontend) và <code>GoogleAuth:ClientId</code> (backend).
-                Xem <code>frontend/.env.example</code> và chạy script <code>backend/doc/sql/060-google-oauth-users.sql</code> trên
-                SQL Server.
-              </p>
-            )}
+              ) : (
+                <Motion.button
+                  type="button"
+                  className="auth-google-fallback-pill"
+                  disabled={loading}
+                  onClick={() =>
+                    setError(
+                      'Chưa cấu hình Google OAuth: thêm VITE_GOOGLE_CLIENT_ID vào frontend/.env (xem .env.example), GoogleAuth:ClientId trên backend, và chạy backend/doc/sql/060-google-oauth-users.sql nếu DB chưa có google_sub.',
+                    )
+                  }
+                  aria-label="Đăng nhập với Google — cần cấu hình Client ID"
+                  title="Cần VITE_GOOGLE_CLIENT_ID — xem frontend/.env.example"
+                  whileHover={{ scale: loading ? 1 : 1.01 }}
+                  whileTap={{ scale: loading ? 1 : 0.98 }}
+                >
+                  <IconGoogleG />
+                  <span>Google</span>
+                </Motion.button>
+              )}
+            </div>
           </Motion.div>
 
           <Motion.p className="auth-footer" variants={loginStaggerItem}>

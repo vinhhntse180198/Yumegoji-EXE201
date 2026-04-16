@@ -96,6 +96,34 @@
 .auth-avatar + .auth-avatar {
   margin-left: -8px;
 }
+
+.auth-avatar--photo {
+  display: inline-flex;
+  overflow: hidden;
+  padding: 0;
+  background: #cbd5e1;
+  flex-shrink: 0;
+}
+
+.auth-avatar--photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.auth-left__hero-footer .auth-avatar--photo,
+.auth-left__mini .auth-avatar--photo {
+  width: 34px;
+  height: 34px;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.28);
+}
+
+.auth-left__hero-footer .auth-avatar + .auth-avatar,
+.auth-left__mini .auth-avatar + .auth-avatar {
+  margin-left: -10px;
+}
 .auth-left__mini strong {
   font-weight: 700;
 }
@@ -238,6 +266,12 @@
   border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--border));
 }
 
+.auth-card__message--notice {
+  color: #1e3a5f;
+  background: #eff6ff;
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
 .auth-footer {
   margin-top: 1rem;
   font-size: 0.95rem;
@@ -268,8 +302,11 @@
   position: relative;
   overflow: hidden;
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  --auth-crimson: #d81b43;
+  --auth-crimson: #be123c;
   --auth-crimson-soft: #e11d48;
+  padding: 0;
+  min-height: calc(100vh - 72px);
+  align-items: stretch;
 }
 
 .auth-sakura-layer {
@@ -292,75 +329,109 @@
 .auth-page--animated-login .auth-shell--v3 {
   position: relative;
   z-index: 1;
-  border-radius: 24px;
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  box-shadow:
-    0 28px 80px rgba(15, 23, 42, 0.12),
-    0 12px 32px rgba(216, 27, 67, 0.08);
+  width: 100%;
+  max-width: none;
+  min-height: calc(100vh - 72px);
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
   background: #fff;
   overflow: hidden;
 }
 
+/* Lông vũ trắng nối ảnh Fuji → panel đăng nhập (như mẫu split). */
+.auth-page--animated-login .auth-shell--v3::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: min(110px, 14vw);
+  transform: translateX(-50%);
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.55) 42%, #fff 88%);
+}
+
 .auth-page--animated-login .auth-left--v3 {
-  min-height: 560px;
-  justify-content: center;
-  align-items: center;
-  padding: 2.5rem 2rem;
+  min-height: min(720px, calc(100vh - 72px));
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding: clamp(2rem, 4vw, 3.5rem) clamp(1.75rem, 4vw, 3.25rem) clamp(2.5rem, 5vw, 4rem);
   background:
-    radial-gradient(ellipse 90% 55% at 50% 100%, rgba(253, 164, 175, 0.18), transparent 58%),
-    linear-gradient(165deg, rgba(2, 6, 23, 0.1), rgba(2, 6, 23, 0.52)),
+    radial-gradient(ellipse 85% 55% at 35% 100%, rgba(253, 164, 175, 0.14), transparent 58%),
+    linear-gradient(105deg, rgba(2, 6, 23, 0.02) 0%, rgba(2, 6, 23, 0.28) 48%, rgba(2, 6, 23, 0.52) 100%),
     url('/hero-japan.png');
   background-size: cover;
   background-position: center;
 }
 
-.auth-left__glass {
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.38);
-  border-radius: 22px;
-  padding: 2rem 2.1rem;
-  max-width: 440px;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.2);
+/* Hero trái: không khung glass — chữ trực tiếp trên ảnh, đọc được nhờ đổ bóng. */
+.auth-left__hero-copy {
+  position: relative;
+  z-index: 1;
+  max-width: 480px;
 }
 
-.auth-left__glass .auth-left__title {
-  font-size: clamp(1.65rem, 4vw, 2.1rem);
+.auth-left__hero-copy .auth-left__title {
+  font-size: clamp(1.85rem, 4.2vw, 2.45rem);
   font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
+  letter-spacing: -0.03em;
+  line-height: 1.12;
+  margin: 0 0 0.85rem;
+  color: #fff;
+  text-shadow:
+    0 2px 32px rgba(0, 0, 0, 0.5),
+    0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
 .auth-left__accent {
   color: #fecdd3;
   font-weight: 800;
-  text-shadow: 0 1px 22px rgba(251, 113, 133, 0.55);
+  text-shadow:
+    0 0 40px rgba(251, 113, 133, 0.65),
+    0 2px 20px rgba(0, 0, 0, 0.4);
 }
 
-.auth-left__glass .auth-left__desc {
-  font-size: 0.98rem;
-  line-height: 1.55;
-  margin-top: 0.85rem;
+.auth-left__hero-copy .auth-left__desc {
+  font-size: clamp(0.95rem, 1.35vw, 1.05rem);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 440px;
+  color: rgba(255, 255, 255, 0.94);
+  text-shadow: 0 1px 18px rgba(0, 0, 0, 0.55);
 }
 
-.auth-left__glass-footer {
-  margin-top: 1.5rem;
+.auth-left__hero-footer {
+  margin-top: 1.65rem;
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.65rem 0.9rem;
+  padding: 0.55rem 1rem 0.55rem 0.7rem;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.22);
+  background: rgba(0, 0, 0, 0.32);
   border: 1px solid rgba(255, 255, 255, 0.22);
   font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .auth-right--v3 {
-  background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
-  padding: 2.5rem 2.35rem 2.25rem;
+  position: relative;
+  z-index: 3;
+  background: #fff;
+  padding: clamp(2rem, 4.5vw, 3.5rem) clamp(1.75rem, 5vw, 4rem);
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.auth-page--animated-login .input-group--auth-motion {
+  will-change: transform;
 }
 
 .auth-login-brand {
@@ -445,6 +516,40 @@
   border-color: rgba(216, 27, 67, 0.55);
   box-shadow: 0 0 0 3px rgba(216, 27, 67, 0.12);
   background: #fff;
+}
+
+.auth-field-input--plain {
+  padding-left: 0.95rem !important;
+  padding-right: 0.95rem;
+}
+
+.auth-page--animated-login .auth-field-input:focus {
+  border-color: color-mix(in srgb, var(--auth-crimson) 55%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--auth-crimson) 14%, transparent);
+}
+
+/* ========== Đăng ký — cùng split full + seam + hero (ảnh auth-register) ========== */
+.auth-page--animated-login.auth-page--register .auth-left--register {
+  min-height: min(720px, calc(100vh - 72px));
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding: clamp(2rem, 4vw, 3.5rem) clamp(1.75rem, 4vw, 3.25rem) clamp(2.5rem, 5vw, 4rem);
+  background:
+    radial-gradient(ellipse 85% 55% at 35% 100%, rgba(253, 164, 175, 0.14), transparent 58%),
+    linear-gradient(105deg, rgba(2, 6, 23, 0.02) 0%, rgba(2, 6, 23, 0.28) 48%, rgba(2, 6, 23, 0.52) 100%),
+    url('/auth-register.png');
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+}
+
+.auth-page--animated-login.auth-page--register .auth-footer a {
+  color: var(--auth-crimson);
+  font-weight: 700;
+}
+
+.auth-social--register {
+  margin-bottom: 0.35rem;
 }
 
 .auth-field-input::placeholder {
@@ -606,6 +711,56 @@
   max-width: 100% !important;
 }
 
+/* Nút Google dạng viên thuốc khi chưa có GIS / chưa cấu hình Client ID (giống mẫu Google) */
+.auth-google-pill-wrap:has(.auth-google-fallback-pill) {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.auth-google-fallback-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 1.35rem;
+  margin: 0;
+  border: 1px solid #dadce0;
+  border-radius: 999px;
+  background: #f8f9fa;
+  color: #3c4043;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.08);
+  transition: background 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.auth-google-fallback-pill:hover:not(:disabled) {
+  background: #f1f3f4;
+  border-color: #d2d4d7;
+  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.12);
+}
+
+.auth-google-fallback-pill:focus-visible {
+  outline: 2px solid var(--auth-crimson, #c41e3a);
+  outline-offset: 2px;
+}
+
+.auth-google-fallback-pill:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.auth-google-fallback-pill__g {
+  flex-shrink: 0;
+}
+
 .auth-login-tagline {
   margin-top: auto;
   padding-top: 1.25rem;
@@ -631,7 +786,37 @@
 }
 
 @media (max-width: 980px) {
+  .auth-page--animated-login .auth-shell--v3::before {
+    display: none;
+  }
+
   .auth-page--animated-login .auth-left--v3 {
-    min-height: 360px;
+    min-height: 340px;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem 1.5rem;
+  }
+
+  .auth-page--animated-login .auth-left__hero-copy {
+    margin: 0 auto;
+  }
+
+  .auth-page--animated-login .auth-left__hero-copy .auth-left__desc {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .auth-page--animated-login .auth-right--v3 {
+    max-width: none;
+    padding: 2rem 1.35rem 2.5rem;
+  }
+
+  .auth-page--animated-login.auth-page--register .auth-left--register {
+    min-height: 340px;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem 1.5rem;
   }
 }

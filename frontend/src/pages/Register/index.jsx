@@ -1,9 +1,22 @@
+/* eslint-env browser */
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import * as FM from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
 import { authService } from '../../services/authService';
 import { ROUTES } from '../../data/routes';
 import { isRequired, isEmail, minLength } from '../../utils/validators';
+import { AuthSakuraLayer } from '../../components/auth/AuthSakuraLayer';
+import { AuthHeroAvatars } from '../../components/auth/AuthHeroAvatars';
+import {
+  loginShellVariants,
+  loginStaggerParent,
+  loginStaggerItem,
+  loginHeroGlass,
+} from '../Login/loginMotion';
+import yumeLogo from '../../assets/yume-logo.png';
+
+const Motion = FM.motion;
 
 export default function Register() {
   const [fullName, setFullName] = useState('');
@@ -78,7 +91,6 @@ export default function Register() {
         username: buildUsername(fullName, email),
         email,
         password,
-        // levelCode: 'N5' // nếu muốn default level, bật dòng này
       });
       setError('');
       navigate(ROUTES.LOGIN, { replace: true, state: { message: 'Đăng ký thành công. Vui lòng đăng nhập.' } });
@@ -90,121 +102,191 @@ export default function Register() {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-shell">
+    <div className="auth-page auth-page--animated-login auth-page--register">
+      <AuthSakuraLayer count={36} />
+
+      <Motion.div
+        className="auth-shell auth-shell--v3"
+        variants={loginShellVariants}
+        initial="hidden"
+        animate="visible"
+      >
         <section className="auth-left auth-left--register">
-          <h2 className="auth-left__title">Start Your Japanese Journey.</h2>
-          <p className="auth-left__desc">
-            Master Kanji, Hiragana, and Katakana with our interactive community-driven platform.
-          </p>
-          <div className="auth-left__mini" aria-hidden="true">
-            <div className="auth-avatars">
-              <span className="auth-avatar" />
-              <span className="auth-avatar" />
-              <span className="auth-avatar" />
+          <Motion.div className="auth-left__hero-copy" variants={loginHeroGlass} initial="hidden" animate="visible">
+            <h2 className="auth-left__title">
+              Start Your Japanese <span className="auth-left__accent">Journey.</span>
+            </h2>
+            <p className="auth-left__desc">
+              Master Kanji, Hiragana, and Katakana with our interactive community-driven platform.
+            </p>
+            <div className="auth-left__hero-footer" aria-hidden="true">
+              <AuthHeroAvatars />
+              <div>
+                Joined by <strong>12,000+</strong> learners
+              </div>
             </div>
-            <div>
-              Joined by <strong>12,000+</strong> learners
-            </div>
-          </div>
+          </Motion.div>
         </section>
 
-        <section className="auth-right">
-          <h1 className="auth-right__title">Create Account</h1>
-          <p className="auth-right__subtitle">Join the Sakura Nihongo community today.</p>
+        <Motion.section className="auth-right auth-right--v3" variants={loginStaggerParent} initial="hidden" animate="visible">
+          <Motion.div className="auth-login-brand" variants={loginStaggerItem}>
+            <img src={yumeLogo} alt="" width={40} height={40} />
+            <span className="auth-login-brand__text">YumeGo-ji</span>
+          </Motion.div>
 
-          <div className="auth-social">
-            <button type="button" className="auth-social__btn" onClick={() => {}}>
+          <Motion.h1 className="auth-right__title" variants={loginStaggerItem}>
+            Create Account
+          </Motion.h1>
+          <Motion.p className="auth-right__subtitle" variants={loginStaggerItem}>
+            Join the YumeGo-ji community today.
+          </Motion.p>
+
+          <Motion.div className="auth-social auth-social--v3 auth-social--register" variants={loginStaggerItem}>
+            <Motion.button
+              type="button"
+              className="auth-social__btn"
+              disabled={loading}
+              whileHover={{ y: -2, scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+            >
               <span className="auth-social__dot" aria-hidden="true" /> Google
-            </button>
-            <button type="button" className="auth-social__btn" onClick={() => {}}>
+            </Motion.button>
+            <Motion.button
+              type="button"
+              className="auth-social__btn"
+              disabled={loading}
+              whileHover={{ y: -2, scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+            >
               <span className="auth-social__dot" aria-hidden="true" /> Facebook
-            </button>
-          </div>
+            </Motion.button>
+          </Motion.div>
 
-          <div className="auth-divider">OR CONTINUE WITH EMAIL</div>
+          <Motion.div className="auth-divider" variants={loginStaggerItem}>
+            OR CONTINUE WITH EMAIL
+          </Motion.div>
 
           <form className="auth-form" onSubmit={handleSubmit}>
-            <div className="input-group">
-              <label htmlFor="register-fullName" className="input-label">
-                Full Name
-              </label>
-              <input
-                id="register-fullName"
-                type="text"
-                className="input-field"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="Arata Tanaka"
-                autoComplete="name"
-                disabled={loading}
-              />
-            </div>
-
-            <div className="input-group">
-              <label htmlFor="register-email" className="input-label">
-                Email Address
-              </label>
-              <input
-                id="register-email"
-                type="email"
-                className="input-field"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@example.com"
-                autoComplete="email"
-                disabled={loading}
-              />
-            </div>
-
-            <div className="auth-grid-2">
-              <div className="input-group">
-                <label htmlFor="register-password" className="input-label">
-                  Password
+            <Motion.div
+              className="auth-form__stagger"
+              variants={loginStaggerParent}
+              initial="hidden"
+              animate="visible"
+            >
+              <Motion.div
+                className="input-group input-group--auth-motion"
+                variants={loginStaggerItem}
+                whileHover={{ y: -2 }}
+                transition={{ type: 'spring', stiffness: 420, damping: 28 }}
+              >
+                <label htmlFor="register-fullName" className="input-label">
+                  Full Name
                 </label>
                 <input
-                  id="register-password"
-                  type="password"
-                  className="input-field"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  autoComplete="new-password"
+                  id="register-fullName"
+                  type="text"
+                  className="auth-field-input auth-field-input--plain"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Arata Tanaka"
+                  autoComplete="name"
                   disabled={loading}
                 />
-              </div>
+              </Motion.div>
 
-              <div className="input-group">
-                <label htmlFor="register-confirmPassword" className="input-label">
-                  Confirm Password
+              <Motion.div
+                className="input-group input-group--auth-motion"
+                variants={loginStaggerItem}
+                whileHover={{ y: -2 }}
+                transition={{ type: 'spring', stiffness: 420, damping: 28 }}
+              >
+                <label htmlFor="register-email" className="input-label">
+                  Email Address
                 </label>
                 <input
-                  id="register-confirmPassword"
-                  type="password"
-                  className="input-field"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="••••••••"
-                  autoComplete="new-password"
+                  id="register-email"
+                  type="email"
+                  className="auth-field-input auth-field-input--plain"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@example.com"
+                  autoComplete="email"
                   disabled={loading}
                 />
-              </div>
-            </div>
+              </Motion.div>
 
-            {error && <p className="form-error">{error}</p>}
-            <button type="submit" className="btn btn--primary btn--block btn--lg" disabled={loading}>
-              {loading ? 'Đang xử lý...' : 'Join Now'}
-            </button>
+              <Motion.div className="auth-grid-2" variants={loginStaggerItem}>
+                <Motion.div
+                  className="input-group input-group--auth-motion"
+                  whileHover={{ y: -2 }}
+                  transition={{ type: 'spring', stiffness: 420, damping: 28 }}
+                >
+                  <label htmlFor="register-password" className="input-label">
+                    Password
+                  </label>
+                  <input
+                    id="register-password"
+                    type="password"
+                    className="auth-field-input auth-field-input--plain"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    autoComplete="new-password"
+                    disabled={loading}
+                  />
+                </Motion.div>
+
+                <Motion.div
+                  className="input-group input-group--auth-motion"
+                  whileHover={{ y: -2 }}
+                  transition={{ type: 'spring', stiffness: 420, damping: 28 }}
+                >
+                  <label htmlFor="register-confirmPassword" className="input-label">
+                    Confirm Password
+                  </label>
+                  <input
+                    id="register-confirmPassword"
+                    type="password"
+                    className="auth-field-input auth-field-input--plain"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    autoComplete="new-password"
+                    disabled={loading}
+                  />
+                </Motion.div>
+              </Motion.div>
+
+              {error && (
+                <Motion.p className="form-error" variants={loginStaggerItem}>
+                  {error}
+                </Motion.p>
+              )}
+
+              <Motion.div variants={loginStaggerItem}>
+                <Motion.button
+                  type="submit"
+                  className="btn btn--primary btn--block btn--lg btn--auth-primary"
+                  disabled={loading}
+                  whileHover={{ scale: loading ? 1 : 1.02 }}
+                  whileTap={{ scale: loading ? 1 : 0.98 }}
+                >
+                  {loading ? 'Đang xử lý...' : 'Join Now'}
+                </Motion.button>
+              </Motion.div>
+            </Motion.div>
           </form>
 
-          <p className="auth-footer">
+          <Motion.p className="auth-footer" variants={loginStaggerItem}>
             Already have an account? <Link to={ROUTES.LOGIN}>Log In</Link>
-          </p>
-          <Link to={ROUTES.HOME} className="auth-back">
-            ← Về trang chủ
-          </Link>
-        </section>
-      </div>
+          </Motion.p>
+          <Motion.div variants={loginStaggerItem}>
+            <Link to={ROUTES.HOME} className="auth-back">
+              ← Về trang chủ
+            </Link>
+          </Motion.div>
+        </Motion.section>
+      </Motion.div>
     </div>
   );
 }

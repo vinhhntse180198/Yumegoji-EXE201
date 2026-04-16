@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { ROUTES } from '../../data/routes';
 import { ChatbotWidget } from '../../components/support/ChatbotWidget';
 import { HOMEPAGE_CTA, HOMEPAGE_HERO, HOMEPAGE_METHOD, HOMEPAGE_TESTIMONIALS, HOMEPAGE_WHY } from '../../data/homepageContent';
+import { HeroImageCarousel } from '../../components/home/HeroImageCarousel';
 import { useAuth } from '../../hooks/useAuth';
 import { fetchMyProgressSummary } from '../../services/learningProgressService';
 
@@ -208,7 +209,12 @@ export default function Homepage() {
             <div className="sn-visual-blob" aria-hidden="true" />
             <div className="sn-visual-card sn-visual-card--tilt">
               <div className="sn-visual-frame">
-                <img className="sn-visual-img" src={hero.image} alt="Hình minh họa Nhật Bản" loading="lazy" />
+                <HeroImageCarousel
+                  images={hero.slides ?? [hero.image]}
+                  fallbackSrc={hero.image}
+                  alt="Hình minh họa Nhật Bản"
+                  intervalMs={6200}
+                />
               </div>
               <div className="sn-visual-float sn-visual-float--metric">
                 <div className="sn-visual-float__icon" aria-hidden="true">

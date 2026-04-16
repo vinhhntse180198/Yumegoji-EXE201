@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
 namespace backend.Controllers;
@@ -21,11 +22,13 @@ public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
     private readonly IWebHostEnvironment _env;
+    private readonly IConfiguration _configuration;
 
-    public AuthController(IAuthService authService, IWebHostEnvironment env)
+    public AuthController(IAuthService authService, IWebHostEnvironment env, IConfiguration configuration)
     {
         _authService = authService;
         _env = env;
+        _configuration = configuration;
     }
 
     [HttpPost("forgot-password")]
@@ -39,9 +42,17 @@ public class AuthController : ControllerBase
         var result = await _authService.RequestPasswordResetAsync(email);
         const string msg =
             "Nếu email đã được đăng ký trên hệ thống, bạn sẽ nhận được hướng dẫn đặt lại mật khẩu (kiểm tra hộp thư hoặc liên hệ hỗ trợ).";
-        if (_env.IsDevelopment() && !string.IsNullOrEmpty(result.DevelopmentResetUrl))
-            return Ok(new { message = msg, resetUrl = result.DevelopmentResetUrl });
-        return Ok(new { message = msg });
+        if (!_env.IsDevelopment())
+            return Ok(new { message = msg });
+
+        var smtpReady = !string.IsNullOrWhiteSpace(_configuration["Smtp:Host"])
+                        && !string.IsNullOrWhiteSpace(_configuration["Smtp:FromEmail"]);
+        return Ok(new
+        {
+            message = msg,
+            resetUrl = result.DevelopmentResetUrl,
+            smtpNotConfigured = !smtpReady,
+        });
     }
 
     [HttpPost("reset-password")]

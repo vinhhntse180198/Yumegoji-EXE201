@@ -170,3 +170,4 @@ E:\EXE201\EXE201\backend\bin\Debug\net8.0\System.Management.dll
 E:\EXE201\EXE201\backend\bin\Debug\net8.0\System.Security.Cryptography.Pkcs.dll
 E:\EXE201\EXE201\backend\bin\Debug\net8.0\runtimes\win\lib\net7.0\System.Management.dll
 E:\EXE201\EXE201\backend\bin\Debug\net8.0\runtimes\win\lib\net8.0\System.Security.Cryptography.Pkcs.dll
+E:\EXE201\EXE201\backend\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
