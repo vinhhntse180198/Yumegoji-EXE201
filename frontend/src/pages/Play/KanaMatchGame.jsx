@@ -169,6 +169,21 @@ const MAX_KANA_QUESTIONS = 46;
 /** Đồng bộ với PlayExpBar — làm mới EXP sau khi kết thúc phiên API */
 const YUME_PLAY_EXP_REFRESH = 'yume-play-exp-refresh';
 
+/** Chiến trường quiz Kana (phương án A): luân phiên theo chỉ số câu */
+const KANA_BATTLEFIELD_KEYS = ['sakura', 'bamboo', 'temple', 'snow'];
+
+function kanaBattlefieldAt(index) {
+  const n = Math.floor(Number(index)) || 0;
+  return KANA_BATTLEFIELD_KEYS[((n % 4) + 4) % 4];
+}
+
+function syncKanaBattleAnim(kana, correct, powerUpUsed, setAnim) {
+  if (!kana) return;
+  if (powerUpUsed === 'skip') setAnim('idle');
+  else if (correct) setAnim('player');
+  else setAnim('enemy');
+}
+
 function optionCellLabel(o) {
   if (o == null) return '';
   if (typeof o === 'string' || typeof o === 'number') return String(o);
@@ -412,6 +427,8 @@ export default function KanaMatchGame() {
   const [showSentenceHint, setShowSentenceHint] = useState(false);
   const sentenceExpectedRef = useRef(0);
   const sentenceChipGenRef = useRef(0);
+  /** idle | player | enemy — chỉ dùng khi kanaGame + đang chơi */
+  const [kanaBattleAnim, setKanaBattleAnim] = useState('idle');
 
   const qCurrent = questions[index] ?? null;
   const sentenceCanonKey = useMemo(() => {
@@ -588,6 +605,7 @@ export default function KanaMatchGame() {
     setSecondsLeft(timePerQ);
     setPickedIndex(null);
     setFeedback(null);
+    if (kanaGame) setKanaBattleAnim('idle');
     questionStartRef.current = Date.now();
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
@@ -607,7 +625,7 @@ export default function KanaMatchGame() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [phase, index, timePerQ]);
+  }, [phase, index, timePerQ, kanaGame]);
 
   useEffect(() => {
     if (phase !== 'playing' || !apiMode || sessionId == null) return undefined;
@@ -732,6 +750,8 @@ export default function KanaMatchGame() {
             correctIndex: corrIdx,
           });
 
+          syncKanaBattleAnim(kanaGame, correct, powerUpUsed, setKanaBattleAnim);
+
           if (arcadeTheme === 'boss' && correct) {
             setBossHp((h) =>
               Math.max(0, h - Math.max(45, Math.ceil(400 / Math.max(1, questions.length)))),
@@ -806,6 +826,8 @@ export default function KanaMatchGame() {
         explanation: correct ? 'Đúng!' : `Đáp án: ${q.options[q.correctIndex]?.text}`,
         correctIndex: q.correctIndex,
       });
+
+      syncKanaBattleAnim(kanaGame, correct, powerUpUsed, setKanaBattleAnim);
 
       let nextHearts = heartsRemaining;
       let nextCorrect = localCorrect;
@@ -1270,6 +1292,7 @@ export default function KanaMatchGame() {
   }
 
   const q = questions[index];
+  const kanaBattlefield = kanaGame ? kanaBattlefieldAt(index) : '';
   const title = useArcadeShell
     ? arcadeDisplayTitle(apiGameSlug, gameMeta?.name ?? gameMeta?.Name)
     : gameMeta?.name ?? gameMeta?.Name ?? prettyTitleFromSlug(gameSlug);
@@ -1626,7 +1649,7 @@ export default function KanaMatchGame() {
   }
 
   return (
-    <div className="play-game">
+    <div className={kanaGame && phase === 'playing' ? 'play-game play-game--kana-battle' : 'play-game'}>
       <header className="play-game__head">
         <Link className="play-game__back" to={ROUTES.PLAY}>
           ← Trò chơi
@@ -1648,6 +1671,65 @@ export default function KanaMatchGame() {
       {error ? <div className="play-game__err">{error}</div> : null}
 
       {powerUpBar}
+
+      {kanaGame && phase === 'playing' ? (
+        <section
+          className={`play-kana-battle play-kana-battle--${kanaBattlefield}`}
+          aria-label="Chiến trường luyện tập"
+          data-anim={kanaBattleAnim}
+        >
+          <div className="play-kana-battle__strip" aria-hidden>
+            <div className="play-kana-battle__hp play-kana-battle__hp--player">
+              <span className="play-kana-battle__hp-label">Ninja</span>
+              <span className="play-kana-battle__hp-track">
+                <span
+                  className="play-kana-battle__hp-fill play-kana-battle__hp-fill--player"
+                  style={{ width: `${playerHpPct}%` }}
+                />
+              </span>
+            </div>
+            <div className="play-kana-battle__hp play-kana-battle__hp--enemy">
+              <span className="play-kana-battle__hp-label">Yurei</span>
+              <span className="play-kana-battle__hp-track">
+                <span className="play-kana-battle__hp-fill play-kana-battle__hp-fill--enemy" />
+              </span>
+            </div>
+          </div>
+          <div className="play-kana-battle__stage">
+            <div className="play-kana-battle__actor play-kana-battle__ninja-wrap">
+              <div className="play-kana-battle__actor-label visually-hidden">Ninja chibi</div>
+              <div className="play-kana-battle__ninja">
+                <div className="play-kana-battle__ninja-band" />
+                <div className="play-kana-battle__ninja-face">
+                  <span className="play-kana-battle__ninja-eye" />
+                  <span className="play-kana-battle__ninja-eye" />
+                </div>
+                <div className="play-kana-battle__ninja-body" />
+                <div className="play-kana-battle__ninja-sword" />
+              </div>
+            </div>
+            <div className="play-kana-battle__actor play-kana-battle__yurei-wrap">
+              <div className="play-kana-battle__actor-label visually-hidden">Yurei</div>
+              <div className="play-kana-battle__yurei">
+                <div className="play-kana-battle__yurei-sheet">
+                  <div className="play-kana-battle__yurei-face">
+                    <span className="play-kana-battle__yurei-eye" />
+                    <span className="play-kana-battle__yurei-eye" />
+                    <span className="play-kana-battle__yurei-blush" />
+                    <span className="play-kana-battle__yurei-blush" />
+                  </div>
+                  <div className="play-kana-battle__yurei-arm play-kana-battle__yurei-arm--l" />
+                  <div className="play-kana-battle__yurei-arm play-kana-battle__yurei-arm--r">
+                    <span className="play-kana-battle__yurei-tablet" aria-hidden />
+                  </div>
+                </div>
+                <div className="play-kana-battle__yurei-tail" />
+              </div>
+            </div>
+          </div>
+          <p className="play-kana-battle__hint">Trả lời đúng để Ninja tấn công; sai hoặc hết giờ thì Yurei phản đòn.</p>
+        </section>
+      ) : null}
 
       {q ? (
         <>

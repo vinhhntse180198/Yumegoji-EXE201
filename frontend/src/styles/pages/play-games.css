@@ -492,6 +492,462 @@ html[data-theme='dark'] .play-layout--session .play-expbar__rank-text {
   color: var(--color-text-secondary, #6b7280);
 }
 
+/* --- Hiragana/Katakana: chiến trường Ninja vs Yurei (phương án A) --- */
+
+.play-game--kana-battle {
+  max-width: min(36rem, 100%);
+}
+
+.play-kana-battle {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  margin: 0 0 1.1rem;
+  min-height: 9.5rem;
+  border: 2px solid rgba(15, 23, 42, 0.12);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+  background-size: cover;
+  background-position: center bottom;
+}
+
+.play-kana-battle--sakura {
+  background-image:
+    radial-gradient(ellipse 120% 80% at 50% 100%, rgba(253, 224, 231, 0.55), transparent 55%),
+    linear-gradient(180deg, #fce7f3 0%, #ddd6fe 42%, #93c5fd 100%);
+}
+
+.play-kana-battle--bamboo {
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      rgba(21, 128, 61, 0.14) 0,
+      rgba(21, 128, 61, 0.14) 10px,
+      transparent 10px,
+      transparent 22px
+    ),
+    linear-gradient(180deg, #ecfccb 0%, #86efac 38%, #166534 100%);
+}
+
+.play-kana-battle--temple {
+  background-image:
+    radial-gradient(circle at 50% 18%, rgba(254, 243, 199, 0.9) 0, transparent 35%),
+    linear-gradient(180deg, #fef3c7 0%, #e7e5e4 45%, #78716c 100%);
+}
+
+.play-kana-battle--snow {
+  background-image:
+    radial-gradient(ellipse 80% 50% at 80% 20%, rgba(255, 255, 255, 0.75), transparent),
+    linear-gradient(180deg, #1e3a5f 0%, #334155 55%, #e2e8f0 100%);
+}
+
+.play-kana-battle__strip {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0.55rem 0;
+  position: relative;
+  z-index: 2;
+}
+
+.play-kana-battle__hp {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(15, 23, 42, 0.75);
+}
+
+.play-kana-battle--snow .play-kana-battle__hp {
+  color: rgba(248, 250, 252, 0.92);
+}
+
+.play-kana-battle__hp-label {
+  display: block;
+  margin-bottom: 0.15rem;
+}
+
+.play-kana-battle__hp-track {
+  display: block;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.12);
+  overflow: hidden;
+}
+
+.play-kana-battle--snow .play-kana-battle__hp-track {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.play-kana-battle__hp-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.35s ease;
+}
+
+.play-kana-battle__hp-fill--player {
+  background: linear-gradient(90deg, #22c55e, #4ade80);
+}
+
+.play-kana-battle__hp-fill--enemy {
+  width: 100%;
+  background: linear-gradient(90deg, #a855f7, #f472b6);
+  opacity: 0.85;
+}
+
+.play-kana-battle__stage {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0.35rem 0.85rem 0.5rem;
+  min-height: 6.5rem;
+}
+
+.play-kana-battle__actor {
+  flex: 0 0 auto;
+  width: 42%;
+  max-width: 8.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.play-kana-battle__ninja {
+  position: relative;
+  width: 3.25rem;
+  height: 4rem;
+  transform-origin: 50% 100%;
+  transition: transform 0.2s ease;
+}
+
+.play-kana-battle__ninja-band {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2.6rem;
+  height: 0.55rem;
+  margin-left: -1.3rem;
+  background: #1e293b;
+  border-radius: 4px;
+  z-index: 3;
+}
+
+.play-kana-battle__ninja-face {
+  position: absolute;
+  top: 0.45rem;
+  left: 50%;
+  width: 2.2rem;
+  height: 1.55rem;
+  margin-left: -1.1rem;
+  background: #fecdd3;
+  border-radius: 10px;
+  border: 2px solid #0f172a;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.play-kana-battle__ninja-eye {
+  width: 0.28rem;
+  height: 0.38rem;
+  background: #0f172a;
+  border-radius: 2px;
+}
+
+.play-kana-battle__ninja-body {
+  position: absolute;
+  bottom: 0.15rem;
+  left: 50%;
+  width: 2.4rem;
+  height: 2.15rem;
+  margin-left: -1.2rem;
+  background: linear-gradient(180deg, #334155, #0f172a);
+  border-radius: 10px 10px 6px 6px;
+  border: 2px solid #0f172a;
+}
+
+.play-kana-battle__ninja-sword {
+  position: absolute;
+  bottom: 0.9rem;
+  right: -0.35rem;
+  width: 0.35rem;
+  height: 1.6rem;
+  background: linear-gradient(180deg, #e2e8f0, #94a3b8);
+  border-radius: 2px;
+  transform: rotate(12deg);
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.25);
+}
+
+.play-kana-battle__yurei {
+  position: relative;
+  width: 3.5rem;
+  height: 4.1rem;
+  transform-origin: 50% 100%;
+  animation: play-kana-yurei-float 2.8s ease-in-out infinite;
+}
+
+.play-kana-battle__yurei-sheet {
+  position: absolute;
+  bottom: 0.2rem;
+  left: 50%;
+  width: 3.1rem;
+  height: 3.35rem;
+  margin-left: -1.55rem;
+  background: linear-gradient(180deg, #fafafa 0%, #ede9fe 92%);
+  border-radius: 46% 46% 38% 38% / 42% 42% 52% 52%;
+  border: 2px solid #c4b5fd;
+  box-shadow: 0 6px 0 rgba(139, 92, 246, 0.12);
+}
+
+.play-kana-battle__yurei-sheet::after {
+  content: '';
+  position: absolute;
+  left: 0.15rem;
+  right: 0.15rem;
+  bottom: -0.15rem;
+  height: 0.55rem;
+  background: repeating-linear-gradient(
+    90deg,
+    #c4b5fd 0,
+    #c4b5fd 5px,
+    transparent 5px,
+    transparent 9px
+  );
+  border-radius: 0 0 10px 10px;
+  opacity: 0.55;
+}
+
+.play-kana-battle__yurei-face {
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  width: 2rem;
+  height: 1.15rem;
+  margin-left: -1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  z-index: 2;
+}
+
+.play-kana-battle__yurei-eye {
+  width: 0.55rem;
+  height: 0.72rem;
+  background: #5b21b6;
+  border-radius: 50%;
+  box-shadow: inset -0.1rem -0.1rem 0 rgba(255, 255, 255, 0.35);
+}
+
+.play-kana-battle__yurei-blush {
+  position: absolute;
+  bottom: 0.05rem;
+  width: 0.38rem;
+  height: 0.2rem;
+  background: #f9a8d4;
+  border-radius: 999px;
+  opacity: 0.85;
+}
+
+.play-kana-battle__yurei-blush:nth-child(3) {
+  left: 0.1rem;
+}
+
+.play-kana-battle__yurei-blush:nth-child(4) {
+  right: 0.1rem;
+}
+
+.play-kana-battle__yurei-arm {
+  position: absolute;
+  width: 0.38rem;
+  height: 0.85rem;
+  background: #fafafa;
+  border: 2px solid #c4b5fd;
+  border-radius: 999px;
+  bottom: 1.1rem;
+  z-index: 1;
+}
+
+.play-kana-battle__yurei-arm--l {
+  left: 0.15rem;
+  transform: rotate(18deg);
+}
+
+.play-kana-battle__yurei-arm--r {
+  right: 0.05rem;
+  transform: rotate(-12deg);
+}
+
+.play-kana-battle__yurei-tablet {
+  position: absolute;
+  top: -0.35rem;
+  left: 50%;
+  width: 0.55rem;
+  height: 0.78rem;
+  margin-left: -0.28rem;
+  background: #78716c;
+  border-radius: 3px;
+  border: 1px solid #44403c;
+}
+
+.play-kana-battle__yurei-tablet::after {
+  content: '';
+  position: absolute;
+  top: 0.12rem;
+  left: 50%;
+  width: 0.14rem;
+  height: 0.14rem;
+  margin-left: -0.07rem;
+  background: #a8a29e;
+  border-radius: 50%;
+}
+
+.play-kana-battle__yurei-tail {
+  position: absolute;
+  right: 0.15rem;
+  bottom: 1.4rem;
+  width: 0.65rem;
+  height: 0.65rem;
+  border: 3px solid transparent;
+  border-right-color: #c4b5fd;
+  border-radius: 50%;
+  transform: rotate(-25deg);
+  opacity: 0.85;
+}
+
+.play-kana-battle__hint {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  padding: 0.35rem 0.65rem 0.5rem;
+  font-size: 0.68rem;
+  line-height: 1.35;
+  text-align: center;
+  color: rgba(15, 23, 42, 0.72);
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.72));
+}
+
+.play-kana-battle--snow .play-kana-battle__hint {
+  color: rgba(248, 250, 252, 0.88);
+  background: linear-gradient(180deg, transparent, rgba(15, 23, 42, 0.35));
+}
+
+@keyframes play-kana-yurei-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.play-kana-battle[data-anim='player'] .play-kana-battle__ninja {
+  animation: play-kana-ninja-lunge 0.55s ease-out both;
+}
+
+.play-kana-battle[data-anim='player'] .play-kana-battle__ninja-sword {
+  animation: play-kana-sword-slash 0.55s ease-out both;
+}
+
+.play-kana-battle[data-anim='player'] .play-kana-battle__yurei {
+  animation: play-kana-yurei-float 2.8s ease-in-out infinite, play-kana-yurei-hit 0.55s ease-out both;
+}
+
+.play-kana-battle[data-anim='enemy'] .play-kana-battle__yurei {
+  animation: play-kana-yurei-float 2.8s ease-in-out infinite, play-kana-yurei-cast 0.58s ease-out both;
+}
+
+.play-kana-battle[data-anim='enemy'] .play-kana-battle__ninja {
+  animation: play-kana-ninja-hurt 0.58s ease-out both;
+}
+
+@keyframes play-kana-ninja-lunge {
+  0% {
+    transform: translateX(0) scale(1);
+  }
+  55% {
+    transform: translateX(42%) scale(1.06);
+  }
+  100% {
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes play-kana-sword-slash {
+  0% {
+    transform: rotate(12deg);
+  }
+  45% {
+    transform: rotate(-28deg) translateY(-2px);
+  }
+  100% {
+    transform: rotate(12deg);
+  }
+}
+
+@keyframes play-kana-yurei-hit {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  40% {
+    transform: translateX(12%) rotate(-6deg);
+    filter: brightness(0.92);
+  }
+}
+
+@keyframes play-kana-yurei-cast {
+  0% {
+    transform: translateX(0);
+  }
+  45% {
+    transform: translateX(-18%) scale(1.05);
+    filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.65));
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes play-kana-ninja-hurt {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px) rotate(-4deg);
+  }
+  40% {
+    transform: translateX(5px) rotate(3deg);
+  }
+  60% {
+    transform: translateX(-4px) rotate(-2deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .play-kana-battle__yurei {
+    animation: none;
+  }
+
+  .play-kana-battle[data-anim='player'] .play-kana-battle__ninja,
+  .play-kana-battle[data-anim='player'] .play-kana-battle__ninja-sword,
+  .play-kana-battle[data-anim='player'] .play-kana-battle__yurei,
+  .play-kana-battle[data-anim='enemy'] .play-kana-battle__yurei,
+  .play-kana-battle[data-anim='enemy'] .play-kana-battle__ninja {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
 /* Summary */
 
 .play-summary {

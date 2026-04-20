@@ -27,6 +27,70 @@ function isImageFile(f) {
   return Boolean(f?.type?.startsWith('image/'));
 }
 
+/** Tách văn bản trích theo marker `--- Slide N ---` (PPTX). */
+function splitIntoSlides(text) {
+  const t = String(text || '').replace(/\r\n/g, '\n');
+  const re = /^---\s*Slide\s+(\d+)\s*---\s*$/gim;
+  const matches = [...t.matchAll(re)];
+  if (!matches.length) {
+    const b = t.trim();
+    return b ? [{ slideNum: 1, body: b }] : [];
+  }
+  const slides = [];
+  for (let i = 0; i < matches.length; i += 1) {
+    const start = matches[i].index + matches[i][0].length;
+    const end = i + 1 < matches.length ? matches[i + 1].index : t.length;
+    const body = t.slice(start, end).trim();
+    const n = Number(matches[i][1], 10) || i + 1;
+    slides.push({ slideNum: n, body });
+  }
+  if (matches[0].index > 0) {
+    const pre = t.slice(0, matches[0].index).trim();
+    if (pre) {
+      slides[0] = { ...slides[0], body: `${pre}\n${slides[0].body}`.trim() };
+    }
+  }
+  return slides;
+}
+
+/** Mỗi dòng slide: ưu tiên `A / B` hoặc tab. */
+function parseSlideRows(body) {
+  return String(body || '')
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const slash = line.split(/\s*\/\s+/);
+      if (slash.length >= 2) {
+        return { jp: slash[0].trim(), vi: slash.slice(1).join(' / ').trim(), raw: line };
+      }
+      const tabs = line.split('\t');
+      if (tabs.length >= 2) {
+        return { jp: tabs[0].trim(), vi: tabs.slice(1).join(' ').trim(), raw: line };
+      }
+      return { jp: line, vi: '', raw: line };
+    });
+}
+
+/** Tiêu đề slide + các dòng làm lưới badge (ưu tiên dòng có nghĩa VI). */
+function slideTopicAndBadgeRows(body, slideNum) {
+  const rows = parseSlideRows(body);
+  if (!rows.length) {
+    return { topic: `Slide ${slideNum}`, badgeRows: [], allRows: [] };
+  }
+  let topic = rows[0].jp.trim();
+  if (topic.length > 32) topic = `${topic.slice(0, 30)}…`;
+  const withVi = rows.filter((r) => r.vi);
+  const badgeRows =
+    withVi.length > 0 ? withVi.slice(0, 24) : rows.slice(1, Math.min(rows.length, 20)).filter((r) => r.jp);
+  return { topic, badgeRows, allRows: rows };
+}
+
+function readingIllustrationUrl(seed) {
+  const s = encodeURIComponent(String(seed || 'yume').slice(0, 40));
+  return `https://picsum.photos/seed/${s}-read/720/300`;
+}
+
 /** Ưu tiên message từ API (kể cả ProblemDetails: title/detail/errors). */
 function getApiErrorMessage(err, fallback) {
   const d = err?.response?.data;
@@ -165,7 +229,9 @@ export function UploadLessonsTab() {
   const [focusReading, setFocusReading] = useState(false);
   const [insightTab, setInsightTab] = useState('vocab');
   const [libToast, setLibToast] = useState('');
-  const [docLayoutHorizontal, setDocLayoutHorizontal] = useState(false);
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+  const [highlightVocabIdx, setHighlightVocabIdx] = useState(null);
+  const [highlightGrammarIdx, setHighlightGrammarIdx] = useState(null);
   const editorAnchorRef = useRef(null);
 
   const [extractedPreview, setExtractedPreview] = useState('');
@@ -205,6 +271,138 @@ export function UploadLessonsTab() {
     if (t.length > 12000) return `${t.slice(0, 12000)}\n…`;
     return t;
   }, [extractedPreview, pastedContent]);
+
+  const parsedSlides = useMemo(() => splitIntoSlides(displaySourceText), [displaySourceText]);
+
+  useEffect(() => {
+    setActiveSlideIndex(0);
+    setHighlightVocabIdx(null);
+    setHighlightGrammarIdx(null);
+  }, [displaySourceText]);
+
+  useEffect(() => {
+    setActiveSlideIndex((i) => {
+      const max = Math.max(0, parsedSlides.length - 1);
+      return Math.min(Math.max(0, i), max);
+    });
+  }, [parsedSlides.length]);
+
+  const safeSlideIdx = Math.min(activeSlideIndex, Math.max(0, parsedSlides.length - 1));
+
+  const readingBlocks = useMemo(() => {
+    if (!draft?.contentHtml) return [];
+    const plain = stripHtmlToPlain(draft.contentHtml);
+    return plain
+      .split(/\n{2,}/)
+      .map((p) => p.trim())
+      .filter(Boolean)
+      .slice(0, 28);
+  }, [draft?.contentHtml]);
+
+  const allSlideRowsFlat = useMemo(() => {
+    const out = [];
+    parsedSlides.forEach((s, si) => {
+      parseSlideRows(s.body).forEach((row, ri) => {
+        out.push({ ...row, slideIndex: si, slideNum: s.slideNum, rowIndex: ri });
+      });
+    });
+    return out;
+  }, [parsedSlides]);
+
+  const speakJp = useCallback((text) => {
+    const t = String(text || '').trim();
+    if (!t || typeof window === 'undefined' || !window.speechSynthesis) return;
+    const u = new SpeechSynthesisUtterance(t);
+    u.lang = 'ja-JP';
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+  }, []);
+
+  const focusVocabInPreview = useCallback(
+    (vocabIdx) => {
+      const v = draft?.vocabulary?.[vocabIdx];
+      if (!v) return;
+      const w = (v.wordJp || '').trim();
+      const hit = w
+        ? allSlideRowsFlat.find((r) => r.jp.includes(w) || w.includes(r.jp) || r.raw.includes(w))
+        : null;
+      if (hit) {
+        setActiveSlideIndex(hit.slideIndex);
+        window.setTimeout(() => {
+          document.getElementById(`doc-slide-${hit.slideIndex}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 60);
+      }
+      setHighlightVocabIdx(vocabIdx);
+      setHighlightGrammarIdx(null);
+    },
+    [draft, allSlideRowsFlat],
+  );
+
+  const focusGrammarInPreview = useCallback(
+    (grammarIdx) => {
+      const g = draft?.grammar?.[grammarIdx];
+      if (!g) return;
+      const p = (g.pattern || '').trim();
+      const hit = p
+        ? allSlideRowsFlat.find((r) => r.jp.includes(p) || p.includes(r.jp) || r.raw.includes(p))
+        : null;
+      if (hit) {
+        setActiveSlideIndex(hit.slideIndex);
+        window.setTimeout(() => {
+          document.getElementById(`doc-slide-${hit.slideIndex}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 60);
+      }
+      setHighlightGrammarIdx(grammarIdx);
+      setHighlightVocabIdx(null);
+    },
+    [draft, allSlideRowsFlat],
+  );
+
+  const onSlideRowActivate = useCallback(
+    (row, slideIdxOverride) => {
+      if (typeof slideIdxOverride === 'number' && slideIdxOverride >= 0) {
+        setActiveSlideIndex(slideIdxOverride);
+      }
+      const jp = String(row?.jp || '').trim();
+      if (!jp || !draft) return;
+      if (draft.vocabulary?.length) {
+        const vidx = draft.vocabulary.findIndex((v) => {
+          const w = (v.wordJp || '').trim();
+          if (!w) return false;
+          return jp.includes(w) || w.includes(jp) || jp.startsWith(w);
+        });
+        if (vidx >= 0) {
+          setInsightTab('vocab');
+          setHighlightVocabIdx(vidx);
+          setHighlightGrammarIdx(null);
+          window.setTimeout(() => {
+            document.getElementById(`recon-vocab-${vidx}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }, 80);
+          return;
+        }
+      }
+      if (draft.grammar?.length) {
+        const gidx = draft.grammar.findIndex((g) => {
+          const p = (g.pattern || '').trim();
+          if (!p) return false;
+          return jp.includes(p) || p.includes(jp);
+        });
+        if (gidx >= 0) {
+          setInsightTab('grammar');
+          setHighlightGrammarIdx(gidx);
+          setHighlightVocabIdx(null);
+          window.setTimeout(() => {
+            document.getElementById(`recon-grammar-${gidx}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }, 80);
+          return;
+        }
+      }
+      setInsightTab('reading');
+      setHighlightVocabIdx(null);
+      setHighlightGrammarIdx(null);
+    },
+    [draft],
+  );
 
   useEffect(() => {
     if (!file || !isImageFile(file)) {
@@ -519,7 +717,9 @@ export function UploadLessonsTab() {
     draft != null
       ? insightTab === 'vocab'
         ? draft.vocabulary?.length ?? 0
-        : draft.grammar?.length ?? 0
+        : insightTab === 'grammar'
+          ? draft.grammar?.length ?? 0
+          : readingBlocks.length
       : 0;
 
   const systemBadgeClass =
@@ -543,8 +743,9 @@ export function UploadLessonsTab() {
         <div className="mod-import__header-text">
           <h2>Import bài học</h2>
           <p>
-            Studio 3 cột: tải tài liệu (PDF, DOCX, PPTX, ảnh xem trước) — xem văn bản nguồn với thanh quét — chỉnh từ vựng
-            / ngữ pháp rồi lưu bài. Chọn JLPT, danh mục và trọng tâm nội dung trước khi lưu.
+            Thanh công cụ phía trên (tải tài liệu, JLPT, quét AI); hai cột dưới chia đôi: <strong>Xem trước tài liệu</strong> và{' '}
+            <strong>Kết quả AI</strong>. Chọn tab Từ vựng / Ngữ pháp / Bài đọc để đồng bộ nội dung hiển thị bên trái theo dữ liệu
+            đã trích.
           </p>
         </div>
       </FM.motion.header>
@@ -588,14 +789,14 @@ export function UploadLessonsTab() {
       ) : null}
 
       <div className="mod-import-studio__shell">
-        <div className="mod-import-studio__grid">
-          <FM.motion.div
-            className="mod-import-studio__col mod-import-studio__col--left"
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: 0.05 }}
-          >
-            <div className="mod-import-studio__glass mod-import-studio__glass--tight">
+        <FM.motion.div
+          className="mod-import-studio__topbar"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.04 }}
+        >
+          <div className="mod-import-studio__topbar-cards">
+            <div className="mod-import-studio__glass mod-import-studio__glass--tight mod-import-studio__glass--compact">
               <h4 className="mod-import-studio__section-title">Nguồn tài liệu</h4>
               <div
                 role="button"
@@ -650,7 +851,7 @@ export function UploadLessonsTab() {
               </p>
             </div>
 
-            <div className="mod-import-studio__glass mod-import-studio__glass--tight">
+            <div className="mod-import-studio__glass mod-import-studio__glass--tight mod-import-studio__glass--compact">
               <h4 className="mod-import-studio__section-title">Cấp độ JLPT mục tiêu</h4>
               <div className="mod-import-studio__jlpt-row">
                 {jlptCodes.map((code) => (
@@ -680,8 +881,12 @@ export function UploadLessonsTab() {
                   ))}
                 </select>
               </div>
+            </div>
+          </div>
 
-              <h4 className="mod-import-studio__section-title" style={{ marginTop: '0.75rem' }}>
+          <div className="mod-import-studio__topbar-controls">
+            <div className="mod-import-studio__glass mod-import-studio__glass--tight">
+              <h4 className="mod-import-studio__section-title" style={{ marginTop: 0 }}>
                 Trọng tâm nội dung (gợi ý AI)
               </h4>
               <div className="mod-import-studio__focus-list">
@@ -733,10 +938,12 @@ export function UploadLessonsTab() {
                 {loading ? 'Đang trích & gọi AI…' : 'Bắt đầu quét'}
               </button>
             </div>
-          </FM.motion.div>
+          </div>
+        </FM.motion.div>
 
+        <div className="mod-import-studio__main-split">
           <FM.motion.div
-            className="mod-import-studio__col mod-import-studio__col--center"
+            className="mod-import-studio__col mod-import-studio__col--preview-wide"
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, delay: 0.1 }}
@@ -748,38 +955,180 @@ export function UploadLessonsTab() {
                   {busy ? 'Đang quét…' : systemBadgeText}
                 </span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
-                <button
-                  type="button"
-                  className="mod-dash__btn mod-dash__btn--outline mod-dash__btn--sm"
-                  onClick={() => setDocLayoutHorizontal((v) => !v)}
-                >
-                  {docLayoutHorizontal ? 'Dọc (JP)' : 'Ngang'}
-                </button>
-              </div>
-              <div className="mod-import-studio__doc-frame">
-                {scannerAnimating ? (
-                  <FM.motion.div
-                    className="mod-import-studio__scanner"
-                    initial={{ top: '12%' }}
-                    animate={{
-                      top: busy ? ['10%', '88%', '10%'] : ['14%', '72%', '14%'],
-                    }}
-                    transition={{
-                      duration: busy ? 2.3 : 5.2,
-                      repeat: Infinity,
-                      ease: 'easeInOut',
-                    }}
-                  />
-                ) : null}
+              <div className="mod-import-studio__doc-frame mod-recon__frame">
                 {imgPreviewUrl ? (
-                  <img src={imgPreviewUrl} alt="Xem trước ảnh đã chọn" className="mod-import-studio__doc-img" />
+                  <div className={`mod-recon__slide-canvas${busy ? ' mod-recon__slide-canvas--scanning' : ''}`}>
+                    {scannerAnimating ? (
+                      <FM.motion.div
+                        className="mod-import-studio__scanner"
+                        initial={{ top: '12%' }}
+                        animate={{
+                          top: busy ? ['10%', '88%', '10%'] : ['14%', '72%', '14%'],
+                        }}
+                        transition={{
+                          duration: busy ? 2.3 : 5.2,
+                          repeat: Infinity,
+                          ease: 'easeInOut',
+                        }}
+                      />
+                    ) : null}
+                    <img src={imgPreviewUrl} alt="Xem trước ảnh đã chọn" className="mod-import-studio__doc-img" />
+                  </div>
                 ) : displaySourceText ? (
-                  <div className="mod-import-studio__doc-scroll">
-                    <div
-                      className={`mod-import-studio__doc-text${docLayoutHorizontal ? ' mod-import-studio__doc-text--horizontal' : ''}`}
-                    >
-                      {displaySourceText}
+                  <div className="mod-doc-preview">
+                    <div className="mod-recon__slide-metabar">
+                      <span className="mod-recon__slide-chip">
+                        {draft ? 'Toàn bộ slide trong file đã trích' : 'Toàn bộ nội dung file (chưa quét AI)'}
+                      </span>
+                      <span className="mod-recon__slide-chip mod-recon__slide-chip--dim">
+                        {parsedSlides.length} phần · 🔊 phát âm từng dòng
+                        {draft ? ' · bấm dòng để đồng bộ Kết quả AI' : ''}
+                      </span>
+                    </div>
+                    <div className={`mod-doc-deck-wrap${busy ? ' mod-doc-deck-wrap--scanning' : ''}`}>
+                      {scannerAnimating ? (
+                        <FM.motion.div
+                          className="mod-import-studio__scanner"
+                          initial={{ top: '12%' }}
+                          animate={{
+                            top: busy ? ['10%', '88%', '10%'] : ['14%', '72%', '14%'],
+                          }}
+                          transition={{
+                            duration: busy ? 2.3 : 5.2,
+                            repeat: Infinity,
+                            ease: 'easeInOut',
+                          }}
+                        />
+                      ) : null}
+                      <div className="mod-doc-deck-scroll">
+                        {parsedSlides.map((slide, si) => {
+                          const { topic, badgeRows, allRows } = slideTopicAndBadgeRows(slide.body, slide.slideNum);
+                          const isActive = si === safeSlideIdx;
+                          const hlVw =
+                            highlightVocabIdx != null && draft?.vocabulary?.[highlightVocabIdx]
+                              ? String(draft.vocabulary[highlightVocabIdx].wordJp || '').trim()
+                              : '';
+                          const hlGp =
+                            highlightGrammarIdx != null && draft?.grammar?.[highlightGrammarIdx]
+                              ? String(draft.grammar[highlightGrammarIdx].pattern || '').trim()
+                              : '';
+                          return (
+                            <article
+                              key={`${slide.slideNum}-${si}`}
+                              id={`doc-slide-${si}`}
+                              className={`mod-doc-slide-card${isActive ? ' mod-doc-slide-card--active' : ''}`}
+                              onClick={() => setActiveSlideIndex(si)}
+                              role="button"
+                              tabIndex={0}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  setActiveSlideIndex(si);
+                                }
+                              }}
+                            >
+                              <div className="mod-doc-slide-card__rail" aria-hidden>
+                                {slide.slideNum}
+                              </div>
+                              <div className="mod-doc-slide-card__main">
+                                <div className="mod-doc-slide-card__head">
+                                  <button
+                                    type="button"
+                                    className="mod-doc-slide-card__speak"
+                                    aria-label="Phát âm tiêu đề slide"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      speakJp(topic);
+                                    }}
+                                  >
+                                    🔊
+                                  </button>
+                                  <div className="mod-doc-slide-topic" lang="ja">
+                                    {topic}
+                                  </div>
+                                </div>
+                                {badgeRows.length > 0 ? (
+                                  <div className="mod-doc-badge-grid">
+                                    {badgeRows.map((row, bri) => (
+                                      <button
+                                        key={`b-${si}-${bri}-${row.raw}`}
+                                        type="button"
+                                        className="mod-doc-badge-cell"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (draft) onSlideRowActivate(row, si);
+                                          else speakJp(row.jp);
+                                        }}
+                                      >
+                                        <span className="mod-doc-badge-cell__tx">
+                                          {(row.vi || row.jp).toUpperCase()}
+                                        </span>
+                                        <span className="mod-doc-badge-cell__ic" aria-hidden>
+                                          🔊
+                                        </span>
+                                      </button>
+                                    ))}
+                                  </div>
+                                ) : null}
+                                <div className="mod-doc-pair-list">
+                                  {allRows.map((row, ri) => {
+                                    const rowVocabHl =
+                                      Boolean(hlVw) &&
+                                      (row.jp.includes(hlVw) ||
+                                        hlVw.includes(row.jp) ||
+                                        String(row.raw || '').includes(hlVw));
+                                    const rowGrammarHl =
+                                      Boolean(hlGp) &&
+                                      (row.jp.includes(hlGp) ||
+                                        hlGp.includes(row.jp) ||
+                                        String(row.raw || '').includes(hlGp));
+                                    return (
+                                      <div
+                                        key={`p-${si}-${ri}-${row.raw}`}
+                                        role="button"
+                                        tabIndex={0}
+                                        className={`mod-yume-pair${rowVocabHl || rowGrammarHl ? ' mod-yume-pair--hl' : ''}`}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (draft) onSlideRowActivate(row, si);
+                                          else speakJp(row.jp);
+                                        }}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            if (draft) onSlideRowActivate(row, si);
+                                            else speakJp(row.jp);
+                                          }
+                                        }}
+                                      >
+                                        <span className="mod-yume-pair__jp" lang="ja">
+                                          {row.jp}
+                                        </span>
+                                        <span className="mod-yume-pair__vi">
+                                          <span className="mod-yume-pair__vi-badge" lang="vi">
+                                            {(row.vi || '—').toUpperCase()}
+                                          </span>
+                                          <button
+                                            type="button"
+                                            className="mod-yume-pair__speak"
+                                            aria-label="Phát âm"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              speakJp(row.jp);
+                                            }}
+                                          >
+                                            🔊
+                                          </button>
+                                        </span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            </article>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -794,13 +1143,15 @@ export function UploadLessonsTab() {
                 )}
               </div>
               <p className="mod-import__tip" style={{ marginTop: '0.65rem' }}>
-                <strong>Mẹo:</strong> văn bản nguồn rõ chữ giúp AI ổn định kana — luôn đối chiếu với tài liệu gốc.
+                <strong>Mẹo:</strong> trước khi quét AI, cột này luôn hiển thị <strong>toàn bộ</strong> văn bản đã trích từ file.
+                Sau khi có bản nháp AI, bấm dòng để tô sáng và mở đúng tab ở cột Kết quả AI (ảnh slide gốc PPTX không có trên
+                server).
               </p>
             </div>
           </FM.motion.div>
 
           <FM.motion.div
-            className="mod-import-studio__col mod-import-studio__col--right"
+            className="mod-import-studio__col mod-import-studio__col--insights-wide"
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, delay: 0.15 }}
@@ -809,110 +1160,239 @@ export function UploadLessonsTab() {
               <div className="mod-import-studio__insights-head">
                 <h3>Kết quả AI</h3>
                 <span className={systemBadgeClass} style={{ fontSize: '0.65rem' }}>
-                  {draft ? `${draft.vocabulary?.length ?? 0} từ · ${draft.grammar?.length ?? 0} NP` : '—'}
+                  {draft
+                    ? `${draft.vocabulary?.length ?? 0} từ · ${draft.grammar?.length ?? 0} NP · ${readingBlocks.length} đoạn`
+                    : '—'}
                 </span>
               </div>
-              <div className="mod-import-studio__tabs">
+              <div className="mod-import-studio__tabs mod-import-studio__tabs--three">
                 <button
                   type="button"
                   className={`mod-import-studio__tab${insightTab === 'vocab' ? ' mod-import-studio__tab--on' : ''}`}
-                  onClick={() => setInsightTab('vocab')}
+                  onClick={() => {
+                    setInsightTab('vocab');
+                    setHighlightVocabIdx(null);
+                    setHighlightGrammarIdx(null);
+                  }}
                 >
                   Từ vựng
                 </button>
                 <button
                   type="button"
                   className={`mod-import-studio__tab${insightTab === 'grammar' ? ' mod-import-studio__tab--on' : ''}`}
-                  onClick={() => setInsightTab('grammar')}
+                  onClick={() => {
+                    setInsightTab('grammar');
+                    setHighlightVocabIdx(null);
+                    setHighlightGrammarIdx(null);
+                  }}
                 >
                   Ngữ pháp
+                </button>
+                <button
+                  type="button"
+                  className={`mod-import-studio__tab${insightTab === 'reading' ? ' mod-import-studio__tab--on' : ''}`}
+                  onClick={() => {
+                    setInsightTab('reading');
+                    setHighlightVocabIdx(null);
+                    setHighlightGrammarIdx(null);
+                  }}
+                >
+                  Bài đọc
                 </button>
               </div>
 
               <div className="mod-import-studio__insight-scroll">
                 {!draft ? (
-                  <div className="mod-import-studio__doc-empty" style={{ minHeight: '180px' }}>
-                    <p>Chưa có bản nháp. Sau khi quét AI, từ vựng và ngữ pháp hiển thị tại đây.</p>
+                  <div className="mod-import-studio__doc-empty mod-ai-empty-wait" style={{ minHeight: '200px' }}>
+                    <p className="mod-ai-empty-wait__title">Chưa tạo bằng AI</p>
+                    <p>
+                      Cột <strong>Xem trước tài liệu</strong> đang hiển thị đầy đủ nội dung đã trích từ file. Bấm{' '}
+                      <strong>Bắt đầu quét</strong> phía trên để AI sinh từ vựng, ngữ pháp và bài đọc tại đây.
+                    </p>
                   </div>
                 ) : insightTab === 'vocab' ? (
                   (draft.vocabulary || []).length ? (
-                    (draft.vocabulary || []).map((row, vi) => (
-                      <FM.motion.div
-                        key={vi}
-                        className="mod-import-studio__insight-card"
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: Math.min(vi * 0.04, 0.35) }}
-                      >
-                        <span className="mod-import-studio__jlpt-tag">{selectedLevelCode}</span>
-                        <input
-                          className="mod-dash__input mod-import-studio__insight-kanji"
-                          value={row.wordJp ?? ''}
-                          onChange={(e) => patchVocab(vi, { wordJp: e.target.value })}
-                          lang="ja"
-                          aria-label="Từ tiếng Nhật"
-                        />
-                        <input
-                          className="mod-dash__input"
-                          value={row.reading ?? ''}
-                          onChange={(e) => patchVocab(vi, { reading: e.target.value })}
-                          lang="ja"
-                          placeholder="Kana"
-                        />
-                        <input
-                          className="mod-dash__input"
-                          value={row.meaningVi ?? ''}
-                          onChange={(e) => patchVocab(vi, { meaningVi: e.target.value })}
-                          placeholder="Nghĩa tiếng Việt"
-                        />
-                        <div className="mod-import-studio__insight-actions">
-                          <button type="button" className="mod-import-studio__btn-lib" onClick={() => saveVocabToLibrary(row)}>
-                            Library
-                          </button>
-                          <button type="button" className="mod-import-studio__btn-lesson" onClick={scrollToLessonEditor}>
-                            + Lesson
-                          </button>
-                        </div>
-                      </FM.motion.div>
-                    ))
+                    <FM.motion.div
+                      className="mod-recon__vocab-grid"
+                      initial="hidden"
+                      animate="show"
+                      variants={{
+                        hidden: {},
+                        show: { transition: { staggerChildren: 0.05, delayChildren: 0.04 } },
+                      }}
+                    >
+                      {(draft.vocabulary || []).map((row, vi) => (
+                        <FM.motion.div
+                          id={`recon-vocab-${vi}`}
+                          key={vi}
+                          role="button"
+                          tabIndex={0}
+                          className={`mod-recon__vocab-tile${highlightVocabIdx === vi ? ' mod-recon__vocab-tile--hl' : ''}`}
+                          variants={{
+                            hidden: { opacity: 0, y: 18, scale: 0.96 },
+                            show: { opacity: 1, y: 0, scale: 1 },
+                          }}
+                          transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+                          onClick={() => focusVocabInPreview(vi)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              focusVocabInPreview(vi);
+                            }
+                          }}
+                        >
+                          <span className="mod-recon__vocab-level">{selectedLevelCode}</span>
+                          <input
+                            className="mod-recon__vocab-word"
+                            value={row.wordJp ?? ''}
+                            onChange={(e) => patchVocab(vi, { wordJp: e.target.value })}
+                            onClick={(e) => e.stopPropagation()}
+                            lang="ja"
+                            aria-label="Từ tiếng Nhật"
+                          />
+                          <input
+                            className="mod-recon__vocab-read"
+                            value={row.reading ?? ''}
+                            onChange={(e) => patchVocab(vi, { reading: e.target.value })}
+                            onClick={(e) => e.stopPropagation()}
+                            lang="ja"
+                            placeholder="Kana"
+                          />
+                          <div className="mod-recon__vocab-badge-wrap" onClick={(e) => e.stopPropagation()}>
+                            <input
+                              className="mod-recon__vocab-badge-in"
+                              value={row.meaningVi ?? ''}
+                              onChange={(e) => patchVocab(vi, { meaningVi: e.target.value })}
+                              placeholder="Nghĩa (VI)"
+                            />
+                          </div>
+                          <div className="mod-import-studio__insight-actions" onClick={(e) => e.stopPropagation()}>
+                            <button type="button" className="mod-import-studio__btn-lib" onClick={() => saveVocabToLibrary(row)}>
+                              Library
+                            </button>
+                            <button type="button" className="mod-import-studio__btn-lesson" onClick={scrollToLessonEditor}>
+                              + Lesson
+                            </button>
+                          </div>
+                        </FM.motion.div>
+                      ))}
+                    </FM.motion.div>
                   ) : (
                     <p className="mod-dash__muted">Chưa có mục từ vựng.</p>
                   )
-                ) : (draft.grammar || []).length ? (
-                  (draft.grammar || []).map((g, gi) => (
+                ) : insightTab === 'grammar' ? (
+                  (draft.grammar || []).length ? (
                     <FM.motion.div
-                      key={gi}
-                      className="mod-import-studio__insight-card"
-                      initial={{ opacity: 0, y: 8 }}
+                      className="mod-recon__grammar-wrap"
+                      initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: Math.min(gi * 0.04, 0.35) }}
+                      transition={{ duration: 0.38 }}
                     >
-                      <span className="mod-import-studio__jlpt-tag">{selectedLevelCode}</span>
-                      <input
-                        className="mod-dash__input"
-                        value={g.pattern ?? ''}
-                        onChange={(e) => patchGrammar(gi, { pattern: e.target.value })}
-                        lang="ja"
-                        placeholder="Mẫu ngữ pháp"
-                      />
-                      <input
-                        className="mod-dash__input"
-                        value={g.meaningVi ?? ''}
-                        onChange={(e) => patchGrammar(gi, { meaningVi: e.target.value })}
-                        placeholder="Giải thích (VI)"
-                      />
-                      <div className="mod-import-studio__insight-actions">
-                        <button type="button" className="mod-import-studio__btn-lib" onClick={() => saveGrammarToLibrary(g)}>
-                          Library
-                        </button>
-                        <button type="button" className="mod-import-studio__btn-lesson" onClick={scrollToLessonEditor}>
-                          + Lesson
-                        </button>
-                      </div>
+                      <table className="mod-recon__grammar-table">
+                        <thead>
+                          <tr>
+                            <th>Mẫu</th>
+                            <th>Giải thích</th>
+                            <th>Ví dụ</th>
+                            <th className="mod-recon__grammar-th-actions"> </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(draft.grammar || []).map((g, gi) => (
+                            <tr
+                              key={gi}
+                              id={`recon-grammar-${gi}`}
+                              tabIndex={0}
+                              className={highlightGrammarIdx === gi ? 'mod-recon__grammar-tr--hl' : undefined}
+                              onClick={() => focusGrammarInPreview(gi)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  focusGrammarInPreview(gi);
+                                }
+                              }}
+                              style={{ cursor: 'pointer' }}
+                            >
+                              <td onClick={(e) => e.stopPropagation()}>
+                                <input
+                                  className="mod-recon__table-input"
+                                  value={g.pattern ?? ''}
+                                  onChange={(e) => patchGrammar(gi, { pattern: e.target.value })}
+                                  lang="ja"
+                                />
+                              </td>
+                              <td onClick={(e) => e.stopPropagation()}>
+                                <input
+                                  className="mod-recon__table-input"
+                                  value={g.meaningVi ?? ''}
+                                  onChange={(e) => patchGrammar(gi, { meaningVi: e.target.value })}
+                                />
+                              </td>
+                              <td onClick={(e) => e.stopPropagation()}>
+                                <span className="mod-recon__grammar-ex" lang="ja">
+                                  {Array.isArray(g.examples) ? g.examples.filter(Boolean).join(' · ') : ''}
+                                </span>
+                              </td>
+                              <td onClick={(e) => e.stopPropagation()}>
+                                <div className="mod-recon__table-actions">
+                                  <button type="button" className="mod-import-studio__btn-lib" onClick={() => saveGrammarToLibrary(g)}>
+                                    Library
+                                  </button>
+                                  <button type="button" className="mod-import-studio__btn-lesson" onClick={scrollToLessonEditor}>
+                                    + Lesson
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </FM.motion.div>
-                  ))
+                  ) : (
+                    <p className="mod-dash__muted">Chưa có mục ngữ pháp.</p>
+                  )
+                ) : readingBlocks.length ? (
+                  <FM.motion.div
+                    className="mod-recon__reading"
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
+                  >
+                    <div className="mod-recon__read-hero">
+                      <img
+                        src={readingIllustrationUrl(slug || title || 'lesson')}
+                        alt=""
+                        className="mod-recon__read-hero-img"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                      <div className="mod-recon__read-hero-cap">Minh họa đọc / hội thoại (ảnh mẫu)</div>
+                    </div>
+                    <div className="mod-recon__dialogue">
+                      {readingBlocks.map((block, bi) => (
+                        <FM.motion.div
+                          key={bi}
+                          className={`mod-recon__bubble mod-recon__bubble--${bi % 2 === 0 ? 'a' : 'b'}`}
+                          initial={{ opacity: 0, x: bi % 2 === 0 ? -14 : 14 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: bi * 0.055, duration: 0.36, ease: [0.22, 1, 0.36, 1] }}
+                        >
+                          <div className="mod-recon__bubble-av" aria-hidden>
+                            {bi % 2 === 0 ? '🧑' : '🌸'}
+                          </div>
+                          <div className="mod-recon__bubble-body">
+                            <div className="mod-recon__bubble-name">{bi % 2 === 0 ? 'Nhân vật A' : 'Nhân vật B'}</div>
+                            <div className="mod-recon__bubble-text" lang="ja">
+                              {block}
+                            </div>
+                          </div>
+                        </FM.motion.div>
+                      ))}
+                    </div>
+                  </FM.motion.div>
                 ) : (
-                  <p className="mod-dash__muted">Chưa có mục ngữ pháp.</p>
+                  <p className="mod-dash__muted">Chưa có đoạn đọc — chỉnh nội dung HTML bên dưới để thêm văn bản.</p>
                 )}
               </div>
 
@@ -923,6 +1403,7 @@ export function UploadLessonsTab() {
               </div>
             </div>
           </FM.motion.div>
+        </div>
 
           {draft ? (
             <FM.motion.div
@@ -1092,7 +1573,6 @@ export function UploadLessonsTab() {
               </div>
             </FM.motion.div>
           ) : null}
-        </div>
       </div>
 
       <FM.AnimatePresence>
