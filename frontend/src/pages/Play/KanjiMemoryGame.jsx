@@ -7,6 +7,7 @@ import SpeakJaButton from '../../components/learn/SpeakJaButton';
 import { ROUTES } from '../../data/routes';
 import { N5_LESSONS } from '../../data/n5BeginnerCourse';
 import { completeKanjiMemoryRewards } from '../../services/gameService';
+import { PlayKurenaiSummary } from './PlayKurenaiSummary';
 import {
   extractKanjiMemoryPairsFromN5Lessons,
   pickRandomPairs,
@@ -17,6 +18,15 @@ const Motion = motion;
 const DEFAULT_PAIR_TARGET = 8;
 const MIN_PAIRS = 4;
 const YUME_PLAY_EXP_REFRESH = 'yume-play-exp-refresh';
+/** Số cánh hoa rơi (CSS animation) — tắt khi reduce motion */
+const SAKURA_PETAL_COUNT = 18;
+
+function formatMmSs(totalSec) {
+  const s = Math.max(0, Math.floor(Number(totalSec) || 0));
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return `${String(m).padStart(2, '0')}:${String(r).padStart(2, '0')}`;
+}
 
 function pickReward(obj, ...keys) {
   for (const k of keys) {
@@ -72,6 +82,7 @@ export default function KanjiMemoryGame() {
   const [apiReward, setApiReward] = useState(null);
   const [apiRewardErr, setApiRewardErr] = useState('');
   const [apiRewardLoading, setApiRewardLoading] = useState(false);
+  const [elapsedSec, setElapsedSec] = useState(0);
   const lockRef = useRef(false);
   const flipBackTimerRef = useRef(null);
   const turnsRef = useRef(0);
@@ -141,6 +152,15 @@ export default function KanjiMemoryGame() {
       if (flipBackTimerRef.current) clearTimeout(flipBackTimerRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (phase !== 'playing') return undefined;
+    setElapsedSec(0);
+    const id = window.setInterval(() => {
+      setElapsedSec((t) => t + 1);
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [phase, pairsMeta]);
 
   useEffect(() => {
     if (phase !== 'playing') return;
@@ -364,144 +384,235 @@ export default function KanjiMemoryGame() {
   }
 
   if (phase === 'won') {
+    const finalScoreRaw = pickReward(apiReward, 'finalScore', 'FinalScore');
+    const finalScore = finalScoreRaw != null && Number.isFinite(Number(finalScoreRaw)) ? Number(finalScoreRaw) : null;
+    const expRw = pickReward(apiReward, 'expEarned', 'ExpEarned');
+    const xuRw = pickReward(apiReward, 'xuEarned', 'XuEarned');
+    const expNum = expRw != null && Number.isFinite(Number(expRw)) ? Number(expRw) : null;
+    const xuNum = xuRw != null && Number.isFinite(Number(xuRw)) ? Number(xuRw) : null;
+    const perfectGuess = totalPairs > 0 && turns <= totalPairs * 2;
+
     return (
-      <div className="kanji-memory kanji-memory--won">
-        <header className="kanji-memory__head">
-          <Link className="kanji-memory__back" to={ROUTES.PLAY}>
-            ← Quay lại
-          </Link>
-          <h1 className="kanji-memory__title">KANJI MEMORY</h1>
-        </header>
-        <div className="kanji-memory__won-card">
-          <h2>Hoàn thành!</h2>
-          <p>
-            Đã ghép đúng <strong>{totalPairs}</strong> cặp sau <strong>{turns}</strong> lượt mở thẻ.
-          </p>
-          <p className="kanji-memory__won-stars" aria-hidden>
-            {totalPairs > 0 ? '⭐'.repeat(Math.min(8, totalPairs)) : '—'}
-          </p>
-          {apiRewardLoading ? (
-            <p className="kanji-memory__won-reward kanji-memory__won-reward--pending">
-              Đang ghi nhận điểm và phần thưởng lên server…
-            </p>
-          ) : null}
-          {apiReward && !apiRewardLoading ? (
-            <div className="kanji-memory__won-reward">
-              <p>
-                <strong>Điểm phiên:</strong>{' '}
-                {pickReward(apiReward, 'finalScore', 'FinalScore') ?? '—'}/100
-              </p>
-              <p>
-                <strong>EXP:</strong> +{pickReward(apiReward, 'expEarned', 'ExpEarned') ?? 0} ·{' '}
-                <strong>Xu:</strong> +{pickReward(apiReward, 'xuEarned', 'XuEarned') ?? 0}
-              </p>
-            </div>
-          ) : null}
-          {apiRewardErr ? (
-            <p className="kanji-memory__won-reward kanji-memory__won-reward--err">{apiRewardErr}</p>
-          ) : null}
-          <div className="kanji-memory__won-actions">
-            <button type="button" className="kanji-memory__start" onClick={startGame}>
-              Chơi lại
-            </button>
-            <Link className="kanji-memory__secondary" to={ROUTES.LEARN}>
-              Về phần học
-            </Link>
-          </div>
-        </div>
-      </div>
+      <PlayKurenaiSummary
+        navBack={{ to: ROUTES.PLAY, label: '← Quay lại trò chơi' }}
+        kicker="Bài tập hoàn tất"
+        headline="Hoàn thành Kanji Memory!"
+        subline={`Đã ghép đúng ${totalPairs} cặp sau ${turns} lượt mở thẻ.`}
+        ring={{ value: finalScore ?? 0, max: 100, centerLabel: 'ĐIỂM' }}
+        showPerfect={perfectGuess}
+        exp={expNum}
+        xu={xuNum}
+        alwaysShowRewardStrip={apiRewardLoading || Boolean(apiReward)}
+        rewardsLoading={apiRewardLoading}
+        statsLine={null}
+        links={null}
+        onPlayAgain={startGame}
+        secondaryTo={ROUTES.LEARN}
+        secondaryLabel="Về phần học"
+      >
+        {apiRewardErr ? <p className="play-kurenai-summary__alert">{apiRewardErr}</p> : null}
+      </PlayKurenaiSummary>
     );
   }
 
   const cols = 4;
 
+  const playShellMotion = reduceMotion
+    ? false
+    : { opacity: 0, y: 18, scale: 0.985 };
+  const playShellAnimate = reduceMotion ? false : { opacity: 1, y: 0, scale: 1 };
+  const playShellTransition = { duration: 0.45, ease: [0.22, 1, 0.36, 1] };
+
+  const headMotion = reduceMotion
+    ? false
+    : { opacity: 0, y: -8 };
+  const hintMotion = reduceMotion ? false : { opacity: 0, y: 6 };
+  const footMotion = reduceMotion ? false : { opacity: 0 };
+
+  const gridListVariants = reduceMotion
+    ? { hidden: {}, show: {} }
+    : {
+        hidden: {},
+        show: {
+          transition: { staggerChildren: 0.035, delayChildren: 0.08 },
+        },
+      };
+  const gridCardVariants = reduceMotion
+    ? { hidden: {}, show: {} }
+    : {
+        hidden: { opacity: 0, y: 16, scale: 0.94, rotateX: -6 },
+        show: {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          rotateX: 0,
+          transition: { type: 'spring', stiffness: 380, damping: 26 },
+        },
+      };
+
   return (
-    <div className="kanji-memory">
-      <header className="kanji-memory__head">
-        <Link className="kanji-memory__back" to={ROUTES.PLAY}>
-          ← Quay lại
-        </Link>
-        <h1 className="kanji-memory__title">KANJI MEMORY</h1>
-        <div className="kanji-memory__hud" aria-live="polite">
-          <span className="kanji-memory__stat">
-            <span aria-hidden>⭐</span> {matchedPairsCount}
-          </span>
-          <span className="kanji-memory__stat">
-            <span aria-hidden>🎴</span> {turns} lượt
-          </span>
-          <span className="kanji-memory__stat kanji-memory__stat--ok">
-            <span aria-hidden>✓</span> {matchedPairsCount}/{totalPairs}
-          </span>
-        </div>
-      </header>
+    <div className={`kanji-memory kanji-memory--play${reduceMotion ? ' kanji-memory--reduce-motion' : ''}`}>
+      <div className="kanji-memory__sakura" aria-hidden />
 
-      <p className="kanji-memory__hint">Lật thẻ và ghép Kanji với nghĩa tương ứng!</p>
-
-      <div
-        className="kanji-memory__grid"
-        style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+      <Motion.div
+        className="kanji-memory__shell"
+        initial={playShellMotion}
+        animate={playShellAnimate}
+        transition={playShellTransition}
       >
-        {cards.map((c) => {
-          const showFace = c.flipped || c.matched;
-          const isKanjiFace = c.kind === 'kanji';
-          const isPicked = c.flipped && !c.matched;
-          const disabled = c.matched || (openCount >= 2 && !c.flipped);
-          return (
-            <div
-              key={c.id}
-              role="button"
-              tabIndex={disabled ? -1 : 0}
-              className={`kanji-memory__card ${showFace ? 'kanji-memory__card--open' : ''} ${c.matched ? 'kanji-memory__card--matched' : ''} ${isPicked ? 'kanji-memory__card--picked' : ''} ${disabled ? 'kanji-memory__card--disabled' : ''}`}
-              onClick={() => {
-                if (!disabled) onCardClick(c.id);
-              }}
-              onKeyDown={(e) => {
-                if (disabled) return;
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  onCardClick(c.id);
-                }
-              }}
-            >
-              <span className="kanji-memory__card-inner">
-                {showFace ? (
-                  <>
-                    <span
-                      className={`kanji-memory__face ${isKanjiFace ? 'kanji-memory__face--jp' : 'kanji-memory__face--vi'}`}
-                      lang={isKanjiFace ? 'ja' : 'vi'}
-                    >
-                      {c.text}
-                    </span>
-                    {isKanjiFace ? (
-                      <span className="kanji-memory__speak">
-                        <SpeakJaButton text={c.text} label={`Nghe: ${c.text}`} />
-                      </span>
-                    ) : null}
-                  </>
-                ) : (
-                  <span className="kanji-memory__q" aria-hidden>
-                    ?
-                  </span>
-                )}
+        {!reduceMotion ? (
+          <div className="kanji-memory__sakura-fall" aria-hidden>
+            {Array.from({ length: SAKURA_PETAL_COUNT }, (_, i) => (
+              <span
+                key={`km-petal-${i}`}
+                className="kanji-memory__petal"
+                style={{
+                  left: `${6 + ((i * 23) % 86)}%`,
+                  animationDuration: `${8.25 + (i % 8) * 0.55}s`,
+                  animationDelay: `${-i * 0.42}s`,
+                  '--km-drift': `${-18 + (i % 11) * 3.5}px`,
+                }}
+              />
+            ))}
+          </div>
+        ) : null}
+
+        <div className="kanji-memory__shell-body">
+        <Motion.header
+          className="kanji-memory__head kanji-memory__head--play"
+          initial={headMotion}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...playShellTransition, delay: reduceMotion ? 0 : 0.04 }}
+        >
+          <div className="kanji-memory__head-left">
+            <Link className="kanji-memory__back" to={ROUTES.PLAY}>
+              ← Quay lại
+            </Link>
+            <h1 className="kanji-memory__title">KANJI MEMORY</h1>
+          </div>
+          <div className="kanji-memory__control" role="group" aria-label="Bảng điều khiển trò chơi">
+            <div className="kanji-memory__control-metric">
+              <span className="kanji-memory__control-label">Thời gian</span>
+              <span className="kanji-memory__control-value kanji-memory__control-value--time" aria-live="polite">
+                {formatMmSs(elapsedSec)}
               </span>
             </div>
-          );
-        })}
-      </div>
+            <div className="kanji-memory__control-metric">
+              <span className="kanji-memory__control-label">Lượt mở</span>
+              <span className="kanji-memory__control-value">{turns}</span>
+            </div>
+            <div className="kanji-memory__control-metric">
+              <span className="kanji-memory__control-label">Tiến độ</span>
+              <span className="kanji-memory__control-value kanji-memory__control-value--muted">
+                {matchedPairsCount}/{totalPairs}
+              </span>
+            </div>
+            <button
+              type="button"
+              className="kanji-memory__control-reset"
+              onClick={() => {
+                if (flipBackTimerRef.current) {
+                  clearTimeout(flipBackTimerRef.current);
+                  flipBackTimerRef.current = null;
+                }
+                startGame();
+              }}
+              title="Làm mới ván (cùng cấu hình)"
+              aria-label="Làm mới ván"
+            >
+              <span aria-hidden>↻</span>
+            </button>
+          </div>
+        </Motion.header>
 
-      <footer className="kanji-memory__foot">
-        <button
-          type="button"
-          className="kanji-memory__linkish"
-          onClick={() => {
-            if (flipBackTimerRef.current) clearTimeout(flipBackTimerRef.current);
-            setPhase('setup');
-            setCards([]);
-          }}
+        <Motion.p
+          className="kanji-memory__hint"
+          initial={hintMotion}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...playShellTransition, delay: reduceMotion ? 0 : 0.1 }}
         >
-          Đổi bài / số cặp
-        </button>
-      </footer>
+          Lật thẻ và ghép Kanji với nghĩa tương ứng!
+        </Motion.p>
+
+        <Motion.div
+          className="kanji-memory__grid"
+          style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+          variants={gridListVariants}
+          initial={reduceMotion ? false : 'hidden'}
+          animate={reduceMotion ? false : 'show'}
+        >
+          {cards.map((c) => {
+            const showFace = c.flipped || c.matched;
+            const isKanjiFace = c.kind === 'kanji';
+            const isPicked = c.flipped && !c.matched;
+            const disabled = c.matched || (openCount >= 2 && !c.flipped);
+            const label = showFace
+              ? `${isKanjiFace ? 'Kanji' : 'Nghĩa'}: ${c.text}${c.matched ? ' (đã ghép)' : ''}`
+              : 'Thẻ úp — bấm để mở';
+            return (
+              <Motion.div
+                key={c.id}
+                role="button"
+                tabIndex={disabled ? -1 : 0}
+                variants={gridCardVariants}
+                className={`kanji-memory__card ${showFace ? 'kanji-memory__card--open' : ''} ${c.matched ? 'kanji-memory__card--matched' : ''} ${isPicked ? 'kanji-memory__card--picked' : ''} ${disabled ? 'kanji-memory__card--disabled' : ''}`}
+                aria-label={label}
+                onClick={() => {
+                  if (!disabled) onCardClick(c.id);
+                }}
+                onKeyDown={(e) => {
+                  if (disabled) return;
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onCardClick(c.id);
+                  }
+                }}
+              >
+                <div className="kanji-memory__flip">
+                  <div className="kanji-memory__flip-inner">
+                    <div className="kanji-memory__flip-face kanji-memory__flip-face--back" aria-hidden>
+                      <span className="kanji-memory__flip-sakura-ico" aria-hidden>
+                        ❀
+                      </span>
+                      <span className="kanji-memory__q">?</span>
+                    </div>
+                    <div className="kanji-memory__flip-face kanji-memory__flip-face--front" lang={isKanjiFace ? 'ja' : 'vi'}>
+                      <span className={`kanji-memory__face ${isKanjiFace ? 'kanji-memory__face--jp' : 'kanji-memory__face--vi'}`}>
+                        {c.text}
+                      </span>
+                      {isKanjiFace ? (
+                        <span className="kanji-memory__speak">
+                          <SpeakJaButton text={c.text} label={`Nghe: ${c.text}`} />
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              </Motion.div>
+            );
+          })}
+        </Motion.div>
+
+        <Motion.footer
+          className="kanji-memory__foot"
+          initial={footMotion}
+          animate={{ opacity: 1 }}
+          transition={{ ...playShellTransition, delay: reduceMotion ? 0 : 0.2 }}
+        >
+          <button
+            type="button"
+            className="kanji-memory__linkish"
+            onClick={() => {
+              if (flipBackTimerRef.current) clearTimeout(flipBackTimerRef.current);
+              setPhase('setup');
+              setCards([]);
+            }}
+          >
+            Đổi bài / số cặp
+          </button>
+        </Motion.footer>
+        </div>
+      </Motion.div>
     </div>
   );
 }

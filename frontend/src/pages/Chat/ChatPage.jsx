@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion as motionFr, useReducedMotion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { SakuraRainLayer } from '../../components/effects/SakuraRainLayer';
-import { MojiChatLayout } from '../../components/chat/MojiChatLayout';
+import { YumeChatLayout } from '../../components/chat/YumeChatLayout';
 import { chatService } from '../../services/chatService';
 import { notifyChatInboxRevised } from '../../hooks/useChatUnreadTotal';
 import { mergeJoinedForAcl } from '../../utils/chatRoomAcl';
@@ -303,7 +303,7 @@ export default function ChatPage() {
 
   if (chatSurface === 'hero') {
     return (
-      <MojiChatLayout variant="lobby" selectedRoomId={null}>
+      <YumeChatLayout variant="lobby" selectedRoomId={null}>
         <div className="chat-lobby-root">
           <div className="chat-lobby-hub__sakura" aria-hidden>
             <SakuraRainLayer petalCount={22} buoyant />
@@ -401,12 +401,12 @@ export default function ChatPage() {
             </Motion.button>
           </Motion.div>
         </div>
-      </MojiChatLayout>
+      </YumeChatLayout>
     );
   }
 
   return (
-    <MojiChatLayout variant="full" selectedRoomId={null}>
+    <YumeChatLayout variant="full" selectedRoomId={null}>
       <div ref={discoverRef} className="chat-lobby-root chat-app-shell">
         <div className="chat-app-shell__toolbar">
           <button type="button" className="moji-chat__discover-hero-btn moji-chat__discover-hero-btn--ghost" onClick={backToHeroLobby}>
@@ -624,6 +624,6 @@ export default function ChatPage() {
           )}
         </div>
       </div>
-    </MojiChatLayout>
+    </YumeChatLayout>
   );
 }

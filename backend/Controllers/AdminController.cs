@@ -5,6 +5,7 @@ using backend.DTOs.Admin;
 using backend.Services.Admin;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace backend.Controllers;
 
@@ -15,10 +16,12 @@ namespace backend.Controllers;
 public class AdminController : ControllerBase
 {
     private readonly IAdminService _admin;
+    private readonly ILogger<AdminController> _logger;
 
-    public AdminController(IAdminService admin)
+    public AdminController(IAdminService admin, ILogger<AdminController> logger)
     {
         _admin = admin;
+        _logger = logger;
     }
 
     /// <summary>Chỉ chấp nhận id dương; tránh dùng 0 làm “magic” cho không hợp lệ.</summary>
@@ -80,5 +83,30 @@ public class AdminController : ControllerBase
     {
         var ok = await _admin.DeleteSensitiveKeywordAsync(id);
         return ok ? NoContent() : NotFound();
+    }
+
+    /// <summary>Xuất bản thông báo toàn hệ thống (user đọc qua GET public + poll).</summary>
+    [HttpPost("system-announcements/publish")]
+    public async Task<IActionResult> PublishSystemAnnouncement([FromBody] PublishSystemAnnouncementRequest body)
+    {
+        if (!TryGetAdminUserId(out var adminUserId)) return Unauthorized();
+        try
+        {
+            var dto = await _admin.PublishSystemAnnouncementAsync(adminUserId, body);
+            return Ok(dto);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>Ghi nhận yêu cầu backup thủ công vào nhật ký máy chủ (tích hợp SQL Agent / maintenance plan sau).</summary>
+    [HttpPost("data-backup-request")]
+    public IActionResult RequestDataBackup()
+    {
+        if (!TryGetAdminUserId(out var adminUserId)) return Unauthorized();
+        _logger.LogInformation("Yêu cầu backup dữ liệu thủ công từ admin userId={AdminUserId}", adminUserId);
+        return Accepted(new { ok = true, message = "Đã ghi nhận yêu cầu backup vào nhật ký máy chủ." });
     }
 }

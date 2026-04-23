@@ -10,6 +10,7 @@ import { Header } from './layout/Header';
 import { LearnerTopNav } from './layout/LearnerTopNav';
 import { Footer } from './layout/Footer';
 import { ROUTES } from './data/routes';
+import { SystemAnnouncementBanner } from './components/system/SystemAnnouncementBanner';
 import './index.css';
 import './styles/theme.css';
 import './styles/learner-nav.css';
@@ -67,6 +68,7 @@ function AppShell() {
       <main
         className={`app-main ${chatFull ? 'app-main--chat' : ''} ${learnerShell ? 'app-main--learner' : ''}`}
       >
+        <SystemAnnouncementBanner />
         {learnerShell ? (
           <AnimatePresence mode="wait" initial={false}>
             <Motion.div

@@ -10,7 +10,7 @@ export function ChatShellProvider({ children }) {
    * { peerUserId, online: true | false | null } — null = chưa biết, không ghi đè danh sách bạn bè.
    */
   const [directRoomPresence, setDirectRoomPresence] = useState(null);
-  /** Tăng sau khi POST read — sidebar (MojiChatLayout) refetch GET /rooms để cập nhật badge chưa đọc. */
+  /** Tăng sau khi POST read — sidebar (YumeChatLayout) refetch GET /rooms để cập nhật badge chưa đọc. */
   const [inboxRevision, setInboxRevision] = useState(0);
   const bumpInboxRevision = useCallback(() => {
     setInboxRevision((n) => n + 1);

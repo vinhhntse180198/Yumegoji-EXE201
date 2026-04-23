@@ -1,18 +1,94 @@
 import { useEffect, useMemo, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { createAdminGame, deleteAdminGame, fetchAdminGames } from '../../../services/gameService';
+
+const Motion = motion;
+
+function normGame(g) {
+  return {
+    id: g.id ?? g.Id,
+    slug: g.slug ?? g.Slug ?? '',
+    name: g.name ?? g.Name ?? '',
+    description: g.description ?? g.Description ?? '',
+    skillType: g.skillType ?? g.SkillType ?? '',
+    maxHearts: g.maxHearts ?? g.MaxHearts ?? 3,
+    isPvp: Boolean(g.isPvp ?? g.IsPvp),
+    isBossMode: Boolean(g.isBossMode ?? g.IsBossMode),
+    sortOrder: g.sortOrder ?? g.SortOrder ?? 0,
+    levelMin: g.levelMin ?? g.LevelMin ?? '',
+    levelMax: g.levelMax ?? g.LevelMax ?? '',
+  };
+}
+
+function truncate(s, n) {
+  const t = String(s ?? '').trim();
+  if (t.length <= n) return t || '—';
+  return `${t.slice(0, n)}…`;
+}
 
 export function GamesAdminTab() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState('');
   const [form, setForm] = useState({ slug: '', name: '', description: '', skillType: '', maxHearts: 3, sortOrder: 0 });
+  const reduceMotion = useReducedMotion();
+
+  const listReveal = useMemo(
+    () => ({
+      hidden: {},
+      visible: {
+        transition: {
+          staggerChildren: reduceMotion ? 0 : 0.06,
+          delayChildren: reduceMotion ? 0 : 0.04,
+        },
+      },
+    }),
+    [reduceMotion],
+  );
+
+  const cardRise = useMemo(
+    () => ({
+      hidden: reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 18 },
+      visible: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: 0.36, ease: [0.22, 1, 0.36, 1] },
+      },
+    }),
+    [reduceMotion],
+  );
+
+  const tableReveal = useMemo(
+    () => ({
+      hidden: {},
+      visible: {
+        transition: {
+          staggerChildren: reduceMotion ? 0 : 0.035,
+          delayChildren: reduceMotion ? 0 : 0.05,
+        },
+      },
+    }),
+    [reduceMotion],
+  );
+
+  const tableRow = useMemo(
+    () => ({
+      hidden: reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 },
+      visible: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: 0.28, ease: [0.22, 1, 0.36, 1] },
+      },
+    }),
+    [reduceMotion],
+  );
 
   async function loadRows() {
     setLoading(true);
     setErr('');
     try {
       const list = await fetchAdminGames();
-      setRows(Array.isArray(list) ? list : []);
+      setRows(Array.isArray(list) ? list.map(normGame) : []);
     } catch (e) {
       setErr(e?.response?.data?.message || e?.message || 'Không tải được danh sách game.');
       setRows([]);
@@ -60,108 +136,121 @@ export function GamesAdminTab() {
     }
   }
 
-  const total = useMemo(() => rows.length, [rows]);
+  const total = rows.length;
 
   return (
     <div className="admin-dash__tab-inner">
-      <h2 className="admin-dash__section-title">Quản lý trò chơi</h2>
-      <p className="admin-dash__section-desc">Dữ liệu game realtime từ DB. Có game mới thì tab Admin tự cập nhật.</p>
+      <Motion.div variants={listReveal} initial="hidden" animate="visible">
+        <Motion.div variants={cardRise}>
+          <h2 className="admin-dash__section-title admin-dash__section-title--serif">Quản lý trò chơi</h2>
+        </Motion.div>
 
-      <div className="admin-dash__subcard">
-        <h3 className="admin-dash__subcard-title">Thêm game mới</h3>
-        <div className="admin-dash__form-grid">
-          <label>
-            Slug
-            <input value={form.slug} onChange={(e) => setForm((p) => ({ ...p, slug: e.target.value }))} placeholder="vd: kana-race" />
-          </label>
-          <label>
-            Tên game
-            <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="vd: Kana Race" />
-          </label>
-          <label>
-            Skill type
-            <input value={form.skillType} onChange={(e) => setForm((p) => ({ ...p, skillType: e.target.value }))} placeholder="vocabulary / grammar..." />
-          </label>
-          <label>
-            Max hearts
-            <input type="number" min={1} max={10} value={form.maxHearts} onChange={(e) => setForm((p) => ({ ...p, maxHearts: Number(e.target.value || 3) }))} />
-          </label>
-          <label>
-            Sort order
-            <input type="number" value={form.sortOrder} onChange={(e) => setForm((p) => ({ ...p, sortOrder: Number(e.target.value || 0) }))} />
-          </label>
-          <label>
-            Mô tả
-            <input value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} />
-          </label>
-        </div>
-        <div className="admin-dash__toolbar-actions" style={{ marginTop: '0.75rem' }}>
-          <button type="button" className="admin-dash__btn admin-dash__btn--primary" onClick={() => void onAddGame()}>
-            + Thêm game
-          </button>
-          <button type="button" className="admin-dash__btn admin-dash__btn--ghost" onClick={() => void loadRows()} disabled={loading}>
-            Làm mới
-          </button>
-          <span className="admin-dash__muted-sm">Tổng game đang active: {total}</span>
-        </div>
-        {err ? <div className="admin-users__alert">{err}</div> : null}
-      </div>
+        <Motion.div className="admin-dash__subcard" variants={cardRise}>
+          <h3 className="admin-dash__subcard-title">Thêm game mới</h3>
+          <div className="admin-dash__form-grid">
+            <label>
+              Slug
+              <input value={form.slug} onChange={(e) => setForm((p) => ({ ...p, slug: e.target.value }))} placeholder="vd: kana-race" />
+            </label>
+            <label>
+              Tên game
+              <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="vd: Kana Race" />
+            </label>
+            <label>
+              Skill type
+              <input value={form.skillType} onChange={(e) => setForm((p) => ({ ...p, skillType: e.target.value }))} placeholder="vocabulary / grammar..." />
+            </label>
+            <label>
+              Max hearts
+              <input type="number" min={1} max={10} value={form.maxHearts} onChange={(e) => setForm((p) => ({ ...p, maxHearts: Number(e.target.value || 3) }))} />
+            </label>
+            <label>
+              Sort order
+              <input type="number" value={form.sortOrder} onChange={(e) => setForm((p) => ({ ...p, sortOrder: Number(e.target.value || 0) }))} />
+            </label>
+            <label>
+              Mô tả
+              <input value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} />
+            </label>
+          </div>
+          <div className="admin-dash__toolbar-actions" style={{ marginTop: '0.75rem' }}>
+            <button type="button" className="admin-dash__btn admin-dash__btn--primary" onClick={() => void onAddGame()}>
+              + Thêm game
+            </button>
+            <button type="button" className="admin-dash__btn admin-dash__btn--ghost" onClick={() => void loadRows()} disabled={loading}>
+              Làm mới
+            </button>
+            <span className="admin-dash__muted-sm">Tổng game: {total}</span>
+          </div>
+          {err ? <div className="admin-users__alert">{err}</div> : null}
+        </Motion.div>
 
-      <div className="admin-dash__subcard">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-          <h3 className="admin-dash__subcard-title" style={{ margin: 0 }}>
-            Danh sách game
-          </h3>
-          <span className="admin-dash__muted-sm">{loading ? 'Đang tải...' : 'Đồng bộ 15s/lần'}</span>
-        </div>
-        <div className="admin-users__table-scroll">
-          <table className="admin-users__table">
-            <thead>
-              <tr>
-                <th>Tên</th>
-                <th>Slug</th>
-                <th>Skill</th>
-                <th>Hearts</th>
-                <th>Sắp xếp</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((g) => (
-                <tr key={g.id}>
-                  <td>
-                    <strong>{g.name ?? g.Name}</strong>
-                  </td>
-                  <td>{g.slug ?? g.Slug}</td>
-                  <td>{g.skillType ?? g.SkillType ?? '—'}</td>
-                  <td>{g.maxHearts ?? g.MaxHearts ?? 3}</td>
-                  <td>{g.sortOrder ?? g.SortOrder ?? 0}</td>
-                  <td>
-                    <button type="button" className="admin-users__action admin-users__action--danger" onClick={() => void onDeleteGame(g.id ?? g.Id, g.name ?? g.Name)}>
-                      Xóa
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {!rows.length ? (
+        <Motion.div className="admin-dash__subcard" variants={cardRise}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+            <h3 className="admin-dash__subcard-title" style={{ margin: 0 }}>
+              Danh sách game
+            </h3>
+            <span className="admin-dash__muted-sm">{loading ? 'Đang tải...' : 'Đồng bộ 15s/lần'}</span>
+          </div>
+          <div className="admin-users__table-scroll">
+            <table className="admin-users__table">
+              <thead>
                 <tr>
-                  <td colSpan={6} className="admin-users__empty">
-                    Chưa có game nào.
-                  </td>
+                  <th>Tên</th>
+                  <th>Slug</th>
+                  <th>Skill</th>
+                  <th>PvP</th>
+                  <th>Boss</th>
+                  <th>Hearts</th>
+                  <th>Sắp xếp</th>
+                  <th>Cấp độ</th>
+                  <th>Mô tả</th>
+                  <th />
                 </tr>
-              ) : null}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div className="admin-dash__subcard">
-        <h3 className="admin-dash__subcard-title">Vật phẩm &amp; huy hiệu</h3>
-        <p className="admin-dash__card-sub">Cấu hình drop rate, thành tích — minh họa.</p>
-        <button type="button" className="admin-dash__btn admin-dash__btn--ghost">
-          Quản lý inventory (demo)
-        </button>
-      </div>
+              </thead>
+              <Motion.tbody variants={tableReveal} initial="hidden" animate="visible">
+                {rows.map((g) => (
+                  <Motion.tr key={g.id} variants={tableRow}>
+                    <td>
+                      <strong>{g.name}</strong>
+                    </td>
+                    <td>
+                      <code className="admin-dash__muted-sm">{g.slug}</code>
+                    </td>
+                    <td>{g.skillType || '—'}</td>
+                    <td>{g.isPvp ? 'Có' : '—'}</td>
+                    <td>{g.isBossMode ? 'Có' : '—'}</td>
+                    <td>{g.maxHearts}</td>
+                    <td>{g.sortOrder}</td>
+                    <td>
+                      {g.levelMin || g.levelMax ? (
+                        <span className="admin-users__level">
+                          {g.levelMin || '—'} → {g.levelMax || '—'}
+                        </span>
+                      ) : (
+                        '—'
+                      )}
+                    </td>
+                    <td className="admin-users__td-email">{truncate(g.description, 56)}</td>
+                    <td>
+                      <button type="button" className="admin-users__action admin-users__action--danger" onClick={() => void onDeleteGame(g.id, g.name)}>
+                        Xóa
+                      </button>
+                    </td>
+                  </Motion.tr>
+                ))}
+                {!rows.length ? (
+                  <tr>
+                    <td colSpan={10} className="admin-users__empty">
+                      Chưa có game nào.
+                    </td>
+                  </tr>
+                ) : null}
+              </Motion.tbody>
+            </table>
+          </div>
+        </Motion.div>
+      </Motion.div>
     </div>
   );
 }

@@ -118,7 +118,9 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    const role = String(user?.role ?? user?.Role ?? 'user').toLowerCase();
+    const role = String(
+      user?.role ?? user?.Role ?? authService.getRoleFromStoredToken() ?? 'user',
+    ).toLowerCase();
     if (role === 'admin') {
       navigate(ROUTES.ADMIN, { replace: true });
     } else if (role === 'moderator') {

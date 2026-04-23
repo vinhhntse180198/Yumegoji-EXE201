@@ -123,3 +123,89 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+/* Thông báo toàn hệ thống (banner, dữ liệu từ API public) */
+.sys-announce {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  padding: 0.55rem 1rem;
+  background: linear-gradient(90deg, rgba(142, 3, 29, 0.12), rgba(142, 3, 29, 0.06));
+  border-bottom: 1px solid rgba(142, 3, 29, 0.22);
+  box-sizing: border-box;
+}
+
+.sys-announce__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.sys-announce__badge {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8e031d;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(142, 3, 29, 0.35);
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  margin-top: 0.15rem;
+}
+
+.sys-announce__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.sys-announce__title {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--text-h);
+  margin-bottom: 0.15rem;
+}
+
+.sys-announce__body {
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--text);
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.sys-announce__close {
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-h);
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.1rem 0.35rem;
+  border-radius: 6px;
+}
+
+.sys-announce__close:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+  .sys-announce {
+    background: linear-gradient(90deg, rgba(142, 3, 29, 0.35), rgba(142, 3, 29, 0.15));
+    border-bottom-color: rgba(255, 255, 255, 0.12);
+  }
+
+  .sys-announce__badge {
+    background: rgba(22, 23, 29, 0.85);
+    color: #fecaca;
+    border-color: rgba(254, 202, 202, 0.35);
+  }
+
+  .sys-announce__close:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}

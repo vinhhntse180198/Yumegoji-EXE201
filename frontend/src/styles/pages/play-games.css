@@ -3244,6 +3244,455 @@ html[data-theme='dark'] .play-layout--session .play-expbar__rank-text {
   text-decoration: underline;
 }
 
+/* ——— Kanji Memory: màn chơi (sakura + cánh rơi + panel mỏng + lật 3D) ——— */
+.kanji-memory--play {
+  --km-play-burgundy: #9d174d;
+  --km-play-rose: #be185d;
+  --km-play-blush: #fce7f3;
+  --km-play-cream: #fff7fb;
+  --km-play-panel: rgba(255, 252, 254, 0.58);
+  position: relative;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 1.05rem 0.85rem 1.35rem;
+  border-radius: 22px;
+  overflow: hidden;
+  color: #431c2e;
+  background:
+    radial-gradient(ellipse 100% 65% at 18% 8%, rgba(251, 207, 232, 0.55), transparent 52%),
+    radial-gradient(ellipse 90% 55% at 88% 12%, rgba(252, 231, 243, 0.75), transparent 48%),
+    radial-gradient(ellipse 80% 90% at 50% 100%, rgba(244, 114, 182, 0.12), transparent 45%),
+    linear-gradient(168deg, #fff5f9 0%, #fce7f3 38%, #fbcfe8 72%, #f9a8d4 100%);
+  border: 1px solid rgba(244, 114, 182, 0.28);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.55) inset,
+    0 22px 56px rgba(157, 23, 77, 0.12);
+}
+
+.kanji-memory--play .kanji-memory__sakura {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.kanji-memory--play .kanji-memory__sakura::before,
+.kanji-memory--play .kanji-memory__sakura::after {
+  content: '';
+  position: absolute;
+  left: -15%;
+  width: 130%;
+  height: 160%;
+  top: -35%;
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(244, 114, 182, 0.5) 0 2px, transparent 3px),
+    radial-gradient(circle at 38% 8%, rgba(251, 207, 232, 0.62) 0 2px, transparent 3px),
+    radial-gradient(circle at 72% 22%, rgba(252, 165, 165, 0.48) 0 2px, transparent 3px),
+    radial-gradient(circle at 88% 12%, rgba(244, 114, 182, 0.42) 0 2px, transparent 3px),
+    radial-gradient(circle at 55% 35%, rgba(251, 207, 232, 0.48) 0 2px, transparent 3px);
+  background-size: 72px 88px, 96px 76px, 84px 92px, 68px 80px, 110px 70px;
+  opacity: 0.62;
+  animation: kanji-memory-sakura-drift 22s linear infinite;
+}
+
+.kanji-memory--play .kanji-memory__sakura::after {
+  animation-duration: 30s;
+  animation-direction: reverse;
+  opacity: 0.48;
+  top: -50%;
+  left: -8%;
+}
+
+@keyframes kanji-memory-sakura-drift {
+  from {
+    transform: translateY(0) translateX(0);
+  }
+
+  to {
+    transform: translateY(42%) translateX(-6px);
+  }
+}
+
+/* Cánh hoa rơi (lớp riêng, z-index dưới nội dung) */
+.kanji-memory__sakura-fall {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.kanji-memory__petal {
+  position: absolute;
+  top: -10%;
+  width: 9px;
+  height: 12px;
+  border-radius: 55% 45% 55% 45%;
+  background: linear-gradient(148deg, rgba(255, 255, 255, 0.95) 0%, #fbcfe8 42%, #f472b6 88%);
+  box-shadow: 0 0 8px rgba(244, 114, 182, 0.45);
+  opacity: 0.78;
+  will-change: transform, opacity;
+  animation: kanji-memory-petal-fall linear infinite;
+}
+
+@keyframes kanji-memory-petal-fall {
+  0% {
+    transform: translate3d(0, -5%, 0) rotate(0deg);
+    opacity: 0;
+  }
+
+  6% {
+    opacity: 0.9;
+  }
+
+  100% {
+    transform: translate3d(var(--km-drift, 12px), 108%, 0) rotate(118deg);
+    opacity: 0;
+  }
+}
+
+.kanji-memory--play.kanji-memory--reduce-motion .kanji-memory__sakura-fall,
+.kanji-memory--play.kanji-memory--reduce-motion .kanji-memory__petal {
+  display: none;
+}
+
+/* Lớp phủ kính mỏng — thấy cánh hoa phía sau; nội dung nổi lên trên */
+.kanji-memory--play .kanji-memory__shell {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  background: var(--km-play-panel);
+  border-radius: 18px;
+  padding: 0.95rem 1rem 1.15rem;
+  border: 1px solid rgba(251, 113, 133, 0.2);
+  box-shadow: 0 10px 40px rgba(157, 23, 77, 0.07);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.kanji-memory__shell-body {
+  position: relative;
+  z-index: 1;
+}
+
+.kanji-memory--play .kanji-memory__head--play {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.85rem 1rem;
+  margin-bottom: 0.65rem;
+}
+
+.kanji-memory__head-left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  min-width: 0;
+}
+
+.kanji-memory--play .kanji-memory__back {
+  color: var(--km-play-burgundy);
+}
+
+.kanji-memory--play .kanji-memory__title {
+  color: var(--km-play-rose);
+  letter-spacing: 0.06em;
+}
+
+.kanji-memory__control {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.5rem 0.65rem;
+  padding: 0.45rem 0.55rem 0.45rem 0.65rem;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, #fff5f9 55%, #fce7f3 100%);
+  border: 1px solid rgba(244, 114, 182, 0.22);
+  box-shadow: 0 4px 18px rgba(190, 24, 93, 0.08);
+}
+
+.kanji-memory__control-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.08rem;
+  min-width: 3.4rem;
+  padding: 0.08rem 0.35rem 0;
+}
+
+.kanji-memory__control-label {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a21caf;
+}
+
+.kanji-memory__control-value {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #831843;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+.kanji-memory__control-value--time {
+  color: var(--km-play-burgundy);
+  font-size: 1.05rem;
+}
+
+.kanji-memory__control-value--muted {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #9d174d;
+}
+
+.kanji-memory__control-reset {
+  align-self: center;
+  margin-left: 0.15rem;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 999px;
+  border: 1px solid rgba(244, 114, 182, 0.35);
+  background: linear-gradient(180deg, #fff 0%, #fff5f9 100%);
+  color: var(--km-play-burgundy);
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.kanji-memory__control-reset:hover {
+  background: #fff5f5;
+  box-shadow: 0 0 0 3px rgba(139, 26, 36, 0.12);
+}
+
+.kanji-memory__control-reset:active {
+  transform: scale(0.94) rotate(-18deg);
+}
+
+.kanji-memory--play .kanji-memory__hint {
+  color: #861043;
+  margin-bottom: 0.85rem;
+}
+
+.kanji-memory--play .kanji-memory__foot .kanji-memory__linkish {
+  color: var(--km-play-burgundy);
+}
+
+.kanji-memory--play .kanji-memory__grid {
+  gap: 0.7rem;
+}
+
+/* Thẻ 3D */
+.kanji-memory--play .kanji-memory__card {
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 14px;
+  perspective: 920px;
+  box-shadow: none;
+}
+
+.kanji-memory--play .kanji-memory__card:hover:not(.kanji-memory__card--disabled) {
+  box-shadow: none;
+}
+
+.kanji-memory--play .kanji-memory__flip {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1;
+  border-radius: 14px;
+}
+
+.kanji-memory--play .kanji-memory__flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.58s cubic-bezier(0.4, 0.2, 0.2, 1);
+  transform: rotateY(0deg);
+  border-radius: 14px;
+}
+
+.kanji-memory--play .kanji-memory__card--open .kanji-memory__flip-inner,
+.kanji-memory--play .kanji-memory__card--matched .kanji-memory__flip-inner {
+  transform: rotateY(180deg);
+}
+
+.kanji-memory--play
+  .kanji-memory__card:not(.kanji-memory__card--open):not(.kanji-memory__card--matched):not(
+    .kanji-memory__card--disabled
+  ):hover
+  .kanji-memory__flip-inner {
+  transform: rotateY(180deg);
+}
+
+.kanji-memory--play.kanji-memory--reduce-motion .kanji-memory__flip-inner {
+  transition-duration: 0.2s;
+}
+
+.kanji-memory--play.kanji-memory--reduce-motion
+  .kanji-memory__card:not(.kanji-memory__card--open):not(.kanji-memory__card--matched):not(
+    .kanji-memory__card--disabled
+  ):hover
+  .kanji-memory__flip-inner {
+  transform: rotateY(0deg);
+}
+
+.kanji-memory--play .kanji-memory__flip-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.35rem;
+  border: 1px solid rgba(139, 26, 36, 0.12);
+  box-shadow: 0 6px 18px rgba(28, 25, 23, 0.07);
+}
+
+.kanji-memory--play .kanji-memory__flip-face--back {
+  transform: rotateY(0deg);
+  background:
+    radial-gradient(circle at 28% 32%, rgba(251, 207, 232, 0.55) 0 26%, transparent 58%),
+    linear-gradient(165deg, #fffafd 0%, #fce7f3 48%, #fbcfe8 100%);
+}
+
+.kanji-memory--play .kanji-memory__flip-sakura-ico {
+  position: absolute;
+  top: 14%;
+  font-size: 1.05rem;
+  opacity: 0.45;
+  color: #f9a8d4;
+  pointer-events: none;
+}
+
+.kanji-memory--play .kanji-memory__flip-face--back .kanji-memory__q {
+  position: relative;
+  z-index: 1;
+  color: var(--km-play-burgundy);
+  opacity: 0.88;
+}
+
+.kanji-memory--play .kanji-memory__flip-face--front {
+  transform: rotateY(180deg);
+  background: linear-gradient(180deg, #ffffff 0%, #fff5f9 100%);
+  border-bottom: 3px solid var(--km-play-rose);
+}
+
+.kanji-memory--play .kanji-memory__card--picked .kanji-memory__flip-face--front {
+  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.35), 0 10px 26px rgba(139, 26, 36, 0.1);
+}
+
+.kanji-memory--play .kanji-memory__card--matched .kanji-memory__flip-face--front {
+  opacity: 0.88;
+  border-bottom-color: rgba(22, 163, 74, 0.75);
+  border-color: rgba(34, 197, 94, 0.28);
+}
+
+.kanji-memory--play .kanji-memory__card--matched {
+  opacity: 1;
+}
+
+.kanji-memory--play .kanji-memory__card--disabled:not(.kanji-memory__card--matched) {
+  opacity: 0.52;
+}
+
+.kanji-memory--play .kanji-memory__face--vi {
+  color: #44403c;
+}
+
+html[data-theme='dark'] .kanji-memory--play {
+  color: #f5f5f4;
+  background:
+    radial-gradient(ellipse 100% 70% at 50% -15%, rgba(157, 23, 77, 0.25), transparent 50%),
+    linear-gradient(165deg, #1c1917 0%, #0c0a09 100%);
+  border-color: rgba(251, 207, 232, 0.12);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+}
+
+html[data-theme='dark'] .kanji-memory--play .kanji-memory__shell {
+  background: rgba(28, 25, 23, 0.62);
+  border-color: rgba(251, 207, 232, 0.16);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme='dark'] .kanji-memory__petal {
+  opacity: 0.55;
+  background: linear-gradient(148deg, rgba(255, 250, 252, 0.55) 0%, #9d174d 55%, #3f0d1f 100%);
+  box-shadow: 0 0 8px rgba(251, 207, 232, 0.2);
+}
+
+html[data-theme='dark'] .kanji-memory--play .kanji-memory__title {
+  color: #fafaf9;
+}
+
+html[data-theme='dark'] .kanji-memory--play .kanji-memory__back {
+  color: #fda4af;
+}
+
+html[data-theme='dark'] .kanji-memory--play .kanji-memory__foot .kanji-memory__linkish {
+  color: #fda4af;
+}
+
+html[data-theme='dark'] .kanji-memory--play .kanji-memory__hint {
+  color: #a8a29e;
+}
+
+html[data-theme='dark'] .kanji-memory__control {
+  background: linear-gradient(180deg, rgba(41, 37, 36, 0.95) 0%, rgba(28, 25, 23, 0.98) 100%);
+  border-color: rgba(251, 207, 232, 0.14);
+}
+
+html[data-theme='dark'] .kanji-memory__control-label {
+  color: #a8a29e;
+}
+
+html[data-theme='dark'] .kanji-memory__control-value {
+  color: #fafaf9;
+}
+
+html[data-theme='dark'] .kanji-memory__control-value--muted {
+  color: #d6d3d1;
+}
+
+html[data-theme='dark'] .kanji-memory__control-reset {
+  background: rgba(12, 10, 9, 0.6);
+  border-color: rgba(251, 207, 232, 0.2);
+  color: #fda4af;
+}
+
+html[data-theme='dark'] .kanji-memory--play .kanji-memory__flip-face--back {
+  background:
+    radial-gradient(circle at 28% 32%, rgba(157, 23, 77, 0.2) 0 24%, transparent 55%),
+    linear-gradient(165deg, #292524 0%, #1c1917 100%);
+  border-color: rgba(251, 207, 232, 0.1);
+}
+
+html[data-theme='dark'] .kanji-memory--play .kanji-memory__flip-face--front {
+  background: linear-gradient(180deg, #292524 0%, #1c1917 100%);
+  border-color: rgba(251, 207, 232, 0.12);
+}
+
+html[data-theme='dark'] .kanji-memory--play .kanji-memory__face--vi {
+  color: #d6d3d1;
+}
+
 .kanji-memory--setup .kanji-memory__head,
 .kanji-memory--won .kanji-memory__head {
   margin-bottom: 1rem;
@@ -4550,6 +4999,18 @@ html[data-theme='light'] .kanji-memory__card {
 html[data-theme='light'] .kanji-memory__q,
 html[data-theme='light'] .kanji-memory__mean {
   color: var(--text-h, #0f172a);
+}
+
+html[data-theme='light'] .kanji-memory--play {
+  background-image:
+    radial-gradient(ellipse 100% 70% at 15% 5%, rgba(251, 207, 232, 0.55), transparent 50%),
+    radial-gradient(ellipse 90% 60% at 90% 10%, rgba(252, 231, 243, 0.65), transparent 48%),
+    linear-gradient(168deg, #fff5f9 0%, #fce7f3 42%, #fbcfe8 78%, #f9a8d4 100%);
+  border-color: rgba(244, 114, 182, 0.28);
+}
+
+html[data-theme='light'] .kanji-memory--play .kanji-memory__title {
+  color: var(--km-play-rose);
 }
 
 /* Hiragana/Katakana (shell play-game + thanh vật phẩm play-power) */

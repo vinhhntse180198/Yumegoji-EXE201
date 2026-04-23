@@ -1,13 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { adminService } from '../../../services/adminService';
 import { moderationService } from '../../../services/moderationService';
 
 const LS_POL = 'yumegoji_admin_policies_v1';
 
+function rowId(r) {
+  return r.id ?? r.Id;
+}
+
+function isTerminalStatus(s) {
+  const v = String(s ?? '').toLowerCase();
+  return v === 'resolved' || v === 'dismissed' || v === 'lock_approved' || v === 'lock_rejected';
+}
+
 export function SystemAdminTab() {
   const [ov, setOv] = useState(null);
   const [reports, setReports] = useState([]);
   const [apiErr, setApiErr] = useState('');
+  const [repBusyId, setRepBusyId] = useState(0);
+  const [notes, setNotes] = useState({});
   const [policies, setPolicies] = useState(() => {
     try {
       return localStorage.getItem(LS_POL) || 'Điều khoản dịch vụ (bản nháp)…\n\nChính sách bảo mật (bản nháp)…';
@@ -17,23 +28,26 @@ export function SystemAdminTab() {
   });
   const [broadcast, setBroadcast] = useState({ title: '', body: '', type: 'maintenance' });
   const [toast, setToast] = useState('');
+  const [publishBusy, setPublishBusy] = useState(false);
+  const [backupBusy, setBackupBusy] = useState(false);
+
+  const loadSystemData = useCallback(async () => {
+    setApiErr('');
+    try {
+      const [overview, reportRows] = await Promise.all([
+        adminService.getOverview(),
+        moderationService.listStaffReports({ limit: 120 }),
+      ]);
+      setOv(overview);
+      setReports(Array.isArray(reportRows) ? reportRows : []);
+    } catch (e) {
+      setApiErr(e?.response?.data?.message || e?.message || 'Không tải được dữ liệu hệ thống từ API.');
+    }
+  }, []);
 
   useEffect(() => {
-    let cancel = false;
-    Promise.all([adminService.getOverview(), moderationService.listStaffReports({ limit: 20 })])
-      .then(([overview, reportRows]) => {
-        if (cancel) return;
-        setOv(overview);
-        setReports(Array.isArray(reportRows) ? reportRows : []);
-      })
-      .catch((e) => {
-        if (cancel) return;
-        setApiErr(e?.response?.data?.message || e?.message || 'Không tải được dữ liệu hệ thống từ API.');
-      });
-    return () => {
-      cancel = true;
-    };
-  }, []);
+    void loadSystemData();
+  }, [loadSystemData]);
 
   function savePolicies() {
     localStorage.setItem(LS_POL, policies);
@@ -41,18 +55,60 @@ export function SystemAdminTab() {
     setTimeout(() => setToast(''), 3000);
   }
 
-  function sendBroadcast() {
+  async function sendBroadcast() {
     if (!broadcast.title.trim()) {
       setToast('Nhập tiêu đề.');
+      setTimeout(() => setToast(''), 3000);
       return;
     }
-    setToast(`Đã ghi nhận thông báo "${broadcast.title}" (demo — nối push/email sau).`);
-    setTimeout(() => setToast(''), 4000);
+    setPublishBusy(true);
+    try {
+      await adminService.publishSystemAnnouncement({
+        title: broadcast.title.trim(),
+        content: broadcast.body.trim(),
+        type: broadcast.type,
+      });
+      setToast('Đã xuất bản thông báo. Người dùng sẽ thấy trên banner (tải lại hoặc chờ vài chục giây).');
+      setBroadcast((b) => ({ ...b, title: '', body: '' }));
+    } catch (e) {
+      setToast(e?.response?.data?.message || e?.message || 'Không gửi được thông báo.');
+    } finally {
+      setPublishBusy(false);
+      setTimeout(() => setToast(''), 5000);
+    }
   }
 
-  function runBackup() {
-    setToast('Yêu cầu backup đã xếp hàng (demo).');
-    setTimeout(() => setToast(''), 3000);
+  async function runBackup() {
+    setBackupBusy(true);
+    try {
+      const res = await adminService.requestDataBackup();
+      setToast(res?.message || 'Đã ghi nhận yêu cầu backup.');
+    } catch (e) {
+      setToast(e?.response?.data?.message || e?.message || 'Không gửi được yêu cầu backup.');
+    } finally {
+      setBackupBusy(false);
+      setTimeout(() => setToast(''), 4000);
+    }
+  }
+
+  async function resolveReport(report, status) {
+    const id = rowId(report);
+    if (!id) return;
+    setRepBusyId(id);
+    try {
+      await moderationService.resolveReport(id, {
+        status,
+        resolutionNote: notes[id] ?? '',
+      });
+      await loadSystemData();
+      setToast(status === 'dismissed' ? 'Đã đánh dấu bỏ qua.' : 'Đã đánh dấu đã xử lý.');
+      setTimeout(() => setToast(''), 3000);
+    } catch (e) {
+      setToast(e?.response?.data?.message || e?.message || 'Không cập nhật được báo cáo.');
+      setTimeout(() => setToast(''), 4000);
+    } finally {
+      setRepBusyId(0);
+    }
   }
 
   return (
@@ -62,7 +118,7 @@ export function SystemAdminTab() {
       {apiErr ? <div className="admin-users__alert">{apiErr}</div> : null}
 
       <div className="admin-dash__subcard">
-        <h3 className="admin-dash__subcard-title">Sức khỏe hệ thống (API thật)</h3>
+        <h3 className="admin-dash__subcard-title">Sức khỏe hệ thống</h3>
         <div className="admin-users__table-scroll">
           <table className="admin-users__table">
             <thead>
@@ -94,15 +150,81 @@ export function SystemAdminTab() {
       </div>
 
       <div className="admin-dash__subcard">
-        <h3 className="admin-dash__subcard-title">Báo cáo từ người dùng (API)</h3>
-        <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
-          {reports.map((r) => (
-            <li key={r.id ?? r.Id} style={{ marginBottom: '0.5rem' }}>
-              <strong>{r.type ?? r.Type ?? 'Report'}</strong> — #{r.id ?? r.Id} · {new Date(r.createdAt ?? r.CreatedAt).toLocaleString('vi-VN')}
-            </li>
-          ))}
-          {reports.length === 0 ? <li>Chưa có báo cáo nào.</li> : null}
-        </ul>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <h3 className="admin-dash__subcard-title" style={{ margin: 0 }}>
+            Báo cáo từ người dùng
+          </h3>
+          <button type="button" className="admin-dash__btn admin-dash__btn--ghost" onClick={() => void loadSystemData()}>
+            Làm mới
+          </button>
+        </div>
+        <div className="admin-users__table-scroll" style={{ marginTop: '0.75rem' }}>
+          <table className="admin-users__table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Loại</th>
+                <th>Trạng thái</th>
+                <th>Người bị báo cáo</th>
+                <th>Mô tả</th>
+                <th>Ngày</th>
+                <th>Ghi chú xử lý</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {reports.map((r) => {
+                const id = rowId(r);
+                const status = r.status ?? r.Status ?? '';
+                const terminal = isTerminalStatus(status);
+                const reported = r.reportedUsername ?? r.ReportedUsername ?? r.reportedUserId ?? r.ReportedUserId ?? '—';
+                const desc = (r.description ?? r.Description ?? '').slice(0, 120);
+                const created = r.createdAt ?? r.CreatedAt;
+                return (
+                  <tr key={id}>
+                    <td>#{id}</td>
+                    <td>{r.type ?? r.Type ?? '—'}</td>
+                    <td>{status || '—'}</td>
+                    <td>{reported}</td>
+                    <td title={r.description ?? r.Description}>{desc || '—'}</td>
+                    <td>{created ? new Date(created).toLocaleString('vi-VN') : '—'}</td>
+                    <td style={{ minWidth: 140 }}>
+                      <input
+                        className="admin-dash__select"
+                        style={{ width: '100%', fontSize: '0.85rem' }}
+                        disabled={terminal}
+                        value={notes[id] ?? ''}
+                        onChange={(e) => setNotes((m) => ({ ...m, [id]: e.target.value }))}
+                        placeholder="Tùy chọn"
+                      />
+                    </td>
+                    <td style={{ whiteSpace: 'nowrap' }}>
+                      <button
+                        type="button"
+                        className="admin-dash__btn admin-dash__btn--primary"
+                        style={{ marginRight: '0.35rem', padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                        disabled={terminal || repBusyId === id}
+                        onClick={() => void resolveReport(r, 'resolved')}
+                      >
+                        Đã xử lý
+                      </button>
+                      <button
+                        type="button"
+                        className="admin-dash__btn admin-dash__btn--ghost"
+                        style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                        disabled={terminal || repBusyId === id}
+                        onClick={() => void resolveReport(r, 'dismissed')}
+                      >
+                        Bỏ qua
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        {reports.length === 0 ? <p className="admin-dash__card-sub" style={{ marginTop: '0.5rem' }}>Chưa có báo cáo nào.</p> : null}
       </div>
 
       <div className="admin-dash__subcard">
@@ -114,16 +236,7 @@ export function SystemAdminTab() {
       </div>
 
       <div className="admin-dash__subcard">
-        <h3 className="admin-dash__subcard-title">Backup dữ liệu thủ công</h3>
-        <p className="admin-dash__card-sub">Trigger job backup DB / export — tích hợp SQL Server maintenance plan sau.</p>
-        <button type="button" className="admin-dash__btn admin-dash__btn--dark" onClick={runBackup}>
-          Chạy backup (demo)
-        </button>
-      </div>
-
-      <div className="admin-dash__subcard">
         <h3 className="admin-dash__subcard-title">Thông báo toàn hệ thống</h3>
-        <p className="admin-dash__card-sub">Bảo trì, sự kiện, khuyến mãi — gửi tới tất cả phiên đang mở (cần SignalR / FCM).</p>
         <label className="admin-dash__modal-label">
           Loại
           <select className="admin-dash__select" value={broadcast.type} onChange={(e) => setBroadcast((b) => ({ ...b, type: e.target.value }))}>
@@ -140,8 +253,15 @@ export function SystemAdminTab() {
           Nội dung
           <textarea className="admin-dash__select" style={{ minHeight: 80 }} value={broadcast.body} onChange={(e) => setBroadcast((b) => ({ ...b, body: e.target.value }))} />
         </label>
-        <button type="button" className="admin-dash__btn admin-dash__btn--primary" onClick={sendBroadcast}>
-          Gửi thông báo (demo)
+        <button type="button" className="admin-dash__btn admin-dash__btn--primary" disabled={publishBusy} onClick={() => void sendBroadcast()}>
+          {publishBusy ? 'Đang gửi…' : 'Gửi thông báo'}
+        </button>
+      </div>
+
+      <div className="admin-dash__subcard">
+        <h3 className="admin-dash__subcard-title">Backup dữ liệu thủ công</h3>
+        <button type="button" className="admin-dash__btn admin-dash__btn--dark" disabled={backupBusy} onClick={() => void runBackup()}>
+          {backupBusy ? 'Đang gửi…' : 'Chạy backup'}
         </button>
       </div>
     </div>

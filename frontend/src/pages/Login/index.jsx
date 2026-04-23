@@ -117,7 +117,7 @@ export default function Login() {
 
   const routeAfterAuth = useCallback(
     (data) => {
-      const u = data?.user ?? authService.getStoredUser();
+      const u = authService.mergeUserWithRoleFromToken(data?.user ?? authService.getStoredUser());
       if (data?.needsPlacementTest && !isStaffUser(u)) {
         navigate(ROUTES.PLACEMENT_TEST, { replace: true });
       } else {

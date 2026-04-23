@@ -1,5 +1,6 @@
 using System;
 using backend.Data.Cfg;
+using backend.Models.Admin;
 using backend.Models.Assessment;
 using backend.Models.Chat;
 using backend.Models.Learning;
@@ -55,6 +56,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<LevelUpQuestion> LevelUpQuestions => Set<LevelUpQuestion>();
     public DbSet<LevelUpQuestionOption> LevelUpQuestionOptions => Set<LevelUpQuestionOption>();
     public DbSet<LevelUpResult> LevelUpResults => Set<LevelUpResult>();
+    public DbSet<SystemAnnouncement> SystemAnnouncements => Set<SystemAnnouncement>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

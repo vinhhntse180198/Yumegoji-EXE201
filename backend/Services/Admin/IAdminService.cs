@@ -11,4 +11,6 @@ public interface IAdminService
     Task<int> CreateSensitiveKeywordAsync(int adminUserId, CreateSensitiveKeywordRequest request);
     Task<bool> UpdateSensitiveKeywordAsync(int id, UpdateSensitiveKeywordRequest request);
     Task<bool> DeleteSensitiveKeywordAsync(int id);
+    Task<SystemAnnouncementPublicDto?> GetLatestPublishedAnnouncementAsync();
+    Task<SystemAnnouncementPublicDto> PublishSystemAnnouncementAsync(int adminUserId, PublishSystemAnnouncementRequest request);
 }

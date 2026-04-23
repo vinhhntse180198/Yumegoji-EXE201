@@ -176,12 +176,17 @@ export async function completeKanjiMemoryRewards(body) {
 }
 
 /** POST /api/game/inventory/use — tên không dùng tiền tố "use" để tránh nhầm với React Hook. */
-/** @param {{ sessionId: number, powerUpSlug: string }} body */
+/** @param {{ sessionId: number, powerUpSlug: string, questionId?: number|null }} body */
 export async function postInventoryPowerUp(body) {
-  await gameApi.useInventoryPowerUp({
+  const payload = {
     sessionId: body.sessionId,
     powerUpSlug: body.powerUpSlug,
-  });
+  };
+  if (body.questionId != null && Number.isFinite(Number(body.questionId))) {
+    payload.questionId = Math.floor(Number(body.questionId));
+  }
+  const { data } = await gameApi.useInventoryPowerUp(payload);
+  return data ?? {};
 }
 
 export async function fetchDailyChallenge() {

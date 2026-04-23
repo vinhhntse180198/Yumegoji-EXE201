@@ -1,6 +1,16 @@
 [
   {
     "ContainingType": "backend.Controllers.AdminController",
+    "Method": "RequestDataBackup",
+    "RelativePath": "api/Admin/data-backup-request",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "backend.Controllers.AdminController",
     "Method": "Overview",
     "RelativePath": "api/Admin/overview",
     "HttpMethod": "GET",
@@ -67,6 +77,22 @@
       {
         "Name": "id",
         "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "backend.Controllers.AdminController",
+    "Method": "PublishSystemAnnouncement",
+    "RelativePath": "api/Admin/system-announcements/publish",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "body",
+        "Type": "backend.DTOs.Admin.PublishSystemAnnouncementRequest",
         "IsRequired": true
       }
     ],
@@ -1025,7 +1051,17 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": []
+    "ReturnTypes": [
+      {
+        "Type": "backend.DTOs.Game.UsePowerUpResultDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   },
   {
     "ContainingType": "backend.Controllers.GameController",
@@ -2733,6 +2769,16 @@
         "StatusCode": 200
       }
     ]
+  },
+  {
+    "ContainingType": "backend.Controllers.PublicController",
+    "Method": "GetLatestSystemAnnouncement",
+    "RelativePath": "api/Public/system-announcements/latest",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
   },
   {
     "ContainingType": "backend.Controllers.SocialController",

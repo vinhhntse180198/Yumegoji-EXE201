@@ -261,6 +261,8 @@ public class ModerationService : IModerationService
             });
         }
 
+        var monthlyTrend = await BuildLastThreeCalendarMonthsTrendAsync(todayUtc);
+
         return new ModerationOverviewDto
         {
             PendingCount = pending,
@@ -268,8 +270,40 @@ public class ModerationService : IModerationService
             DismissedTodayCount = dismissedToday,
             NewSinceYesterdayCount = newSinceYesterday,
             RegisteredLearnersCount = registeredLearners,
-            Trend = trend
+            Trend = trend,
+            MonthlyTrend = monthlyTrend
         };
+    }
+
+    private async Task<List<ModerationMonthlyBucketDto>> BuildLastThreeCalendarMonthsTrendAsync(DateTime todayUtc)
+    {
+        var firstOfThisMonth = new DateTime(todayUtc.Year, todayUtc.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var startMonth = firstOfThisMonth.AddMonths(-2);
+        var buckets = new ModerationMonthlyBucketDto[3];
+
+        async Task FillMonthAsync(int i)
+        {
+            var monthStart = startMonth.AddMonths(i);
+            var monthEnd = monthStart.AddMonths(1);
+            var reportsCreated = await _db.Reports.AsNoTracking()
+                .CountAsync(r => r.CreatedAt >= monthStart && r.CreatedAt < monthEnd);
+            var reportsResolved = await _db.Reports.AsNoTracking()
+                .CountAsync(r =>
+                    r.ResolvedAt.HasValue &&
+                    r.ResolvedAt.Value >= monthStart &&
+                    r.ResolvedAt.Value < monthEnd &&
+                    (r.Status == "resolved" || r.Status == "dismissed"));
+            buckets[i] = new ModerationMonthlyBucketDto
+            {
+                MonthKey = monthStart.ToString("yyyy-MM"),
+                MonthLabel = $"Tháng {monthStart.Month}",
+                ReportsCreated = reportsCreated,
+                ReportsResolved = reportsResolved
+            };
+        }
+
+        await Task.WhenAll(FillMonthAsync(0), FillMonthAsync(1), FillMonthAsync(2));
+        return buckets.ToList();
     }
 
     public async Task<IReadOnlyList<StaffLearnerRowDto>> GetLearnersForStaffAsync(int limit)

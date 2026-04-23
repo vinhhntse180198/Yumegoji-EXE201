@@ -1,4 +1,5 @@
 using System.Data;
+using System.Text.Json;
 using backend.Data;
 using backend.DTOs.Game;
 using Dapper;
@@ -603,7 +604,7 @@ public partial class GameService : IGameService
         }
     }
 
-    public async Task UsePowerUpAsync(int userId, UsePowerUpRequest req)
+    public async Task<UsePowerUpResultDto> UsePowerUpAsync(int userId, UsePowerUpRequest req)
     {
         using var db = CreateConnection();
         await db.OpenAsync();
@@ -618,9 +619,95 @@ public partial class GameService : IGameService
         if (string.IsNullOrEmpty(norm))
             throw new ArgumentException("Thiếu power-up slug.");
 
+        IReadOnlyList<int>? fiftyHidden = null;
+        if (norm == "fifty-fifty")
+        {
+            if (req.QuestionId is null or < 1)
+                throw new ArgumentException("50:50 cần gửi questionId của câu hiện tại.");
+
+            var answered = await db.ExecuteScalarAsync<int>(
+                """
+                SELECT COUNT(1) FROM dbo.game_session_answers
+                WHERE session_id = @sid AND question_id = @qid
+                """,
+                new { sid = req.SessionId, qid = req.QuestionId.Value });
+            if (answered > 0)
+                throw new InvalidOperationException("Đã trả lời câu này — không dùng 50:50.");
+
+            const string qSql = """
+                SELECT gq.correct_index, gq.options_json
+                FROM dbo.game_sessions gs
+                INNER JOIN dbo.game_questions gq
+                  ON gq.id = @qid AND gq.set_id = gs.set_id
+                WHERE gs.id = @sid AND gs.ended_at IS NULL
+                """;
+            var qRows = (await db.QueryAsync<(int correct_index, string? options_json)>(
+                    qSql,
+                    new { sid = req.SessionId, qid = req.QuestionId.Value }))
+                .ToList();
+            if (qRows.Count == 0)
+                throw new InvalidOperationException("Câu hỏi không thuộc phiên hiện tại.");
+
+            var qrow = qRows[0];
+            var optionCount = CountOptionEntriesFromJson(qrow.options_json);
+            if (optionCount < 2)
+                throw new InvalidOperationException("Câu hỏi không đủ đáp án để dùng 50:50.");
+
+            var correct = Math.Clamp(qrow.correct_index, 0, optionCount - 1);
+            fiftyHidden = PickFiftyFiftyHiddenIndices(optionCount, correct);
+        }
+
         await DeductPowerUpAsync(db, userId, norm, req.SessionId);
         if (norm == "heart")
             await RestoreOneHeartAsync(db, req.SessionId);
+
+        return new UsePowerUpResultDto(fiftyHidden);
+    }
+
+    private static int CountOptionEntriesFromJson(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+            return 0;
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+            if (root.ValueKind == JsonValueKind.Array)
+                return root.GetArrayLength();
+            if (root.ValueKind == JsonValueKind.Object)
+            {
+                if (root.TryGetProperty("options", out var o) && o.ValueKind == JsonValueKind.Array)
+                    return o.GetArrayLength();
+                if (root.TryGetProperty("Options", out var o2) && o2.ValueKind == JsonValueKind.Array)
+                    return o2.GetArrayLength();
+            }
+        }
+        catch (JsonException)
+        {
+            return 0;
+        }
+
+        return 0;
+    }
+
+    private static int[] PickFiftyFiftyHiddenIndices(int optionCount, int correctIndex)
+    {
+        var wrong = new List<int>(optionCount);
+        for (var i = 0; i < optionCount; i++)
+        {
+            if (i != correctIndex)
+                wrong.Add(i);
+        }
+
+        var rnd = Random.Shared;
+        for (var i = wrong.Count - 1; i > 0; i--)
+        {
+            var j = rnd.Next(i + 1);
+            (wrong[i], wrong[j]) = (wrong[j], wrong[i]);
+        }
+
+        var take = Math.Min(2, wrong.Count);
+        return wrong.Take(take).ToArray();
     }
 
     public async Task<IReadOnlyList<LeaderboardEntryDto>> GetLeaderboardAsync(

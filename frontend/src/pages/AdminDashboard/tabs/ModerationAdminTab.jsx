@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { adminService } from '../../../services/adminService';
 import { moderationService } from '../../../services/moderationService';
+
+const Motion = motion;
 
 export function ModerationAdminTab() {
   const [reports, setReports] = useState([]);
@@ -13,6 +16,41 @@ export function ModerationAdminTab() {
   const [lockErr, setLockErr] = useState(null);
   const [lockBusyId, setLockBusyId] = useState(0);
   const [lockNoteById, setLockNoteById] = useState({});
+  const reduceMotion = useReducedMotion();
+
+  const sectionReveal = useMemo(
+    () => ({
+      hidden: {},
+      visible: {
+        transition: { staggerChildren: reduceMotion ? 0 : 0.08, delayChildren: reduceMotion ? 0 : 0.04 },
+      },
+    }),
+    [reduceMotion],
+  );
+
+  const blockRise = useMemo(
+    () => ({
+      hidden: reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 18 },
+      visible: { opacity: 1, y: 0, transition: { duration: 0.36, ease: [0.22, 1, 0.36, 1] } },
+    }),
+    [reduceMotion],
+  );
+
+  const tableStagger = useMemo(
+    () => ({
+      hidden: {},
+      visible: { transition: { staggerChildren: reduceMotion ? 0 : 0.035 } },
+    }),
+    [reduceMotion],
+  );
+
+  const tableRow = useMemo(
+    () => ({
+      hidden: reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 },
+      visible: { opacity: 1, y: 0, transition: { duration: 0.28, ease: [0.22, 1, 0.36, 1] } },
+    }),
+    [reduceMotion],
+  );
 
   const loadReports = useCallback(async () => {
     setRepErr(null);
@@ -52,18 +90,6 @@ export function ModerationAdminTab() {
     void loadKw();
     void loadLockReqs();
   }, [loadReports, loadKw, loadLockReqs]);
-
-  const modStats = useMemo(() => {
-    const map = new Map();
-    for (const r of reports) {
-      const mid = r.assignedModeratorId ?? r.AssignedModeratorId;
-      if (mid == null) continue;
-      map.set(mid, (map.get(mid) || 0) + 1);
-    }
-    return Array.from(map.entries())
-      .map(([id, cnt]) => ({ id, cnt }))
-      .sort((a, b) => b.cnt - a.cnt);
-  }, [reports]);
 
   async function addKeyword() {
     if (!newKw.trim()) return;
@@ -114,16 +140,16 @@ export function ModerationAdminTab() {
   }
 
   return (
-    <div className="admin-dash__tab-inner">
-      <h2 className="admin-dash__section-title">Quản lý kiểm duyệt</h2>
-      <p className="admin-dash__section-desc">
-        Báo cáo từ <code className="admin-dash__code-inline">GET /api/Moderation/staff/reports</code>; blacklist từ{' '}
-        <code className="admin-dash__code-inline">/api/Admin/sensitive-keywords</code>.
-      </p>
+    <Motion.div className="admin-dash__tab-inner" variants={sectionReveal} initial="hidden" animate="visible">
+      <Motion.div variants={blockRise}>
+        <h2 className="admin-dash__section-title admin-dash__section-title--serif">Quản lý kiểm duyệt</h2>
+        <p className="admin-dash__section-desc">
+          Duyệt đề xuất khóa tài khoản từ moderator, theo dõi báo cáo vi phạm chat và cấu hình từ khóa nhạy cảm toàn hệ thống.
+        </p>
+      </Motion.div>
 
-      <div className="admin-dash__subcard">
+      <Motion.div className="admin-dash__subcard" variants={blockRise}>
         <h3 className="admin-dash__subcard-title">Đề xuất đình chỉ từ Moderator</h3>
-        <p className="admin-dash__card-sub">Nguồn realtime từ báo cáo có trạng thái pending_admin_lock.</p>
         {lockErr ? <div className="admin-users__alert">{lockErr}</div> : null}
         <div className="admin-users__table-scroll">
           <table className="admin-users__table">
@@ -138,12 +164,12 @@ export function ModerationAdminTab() {
                 <th />
               </tr>
             </thead>
-            <tbody>
+            <Motion.tbody variants={tableStagger} initial="hidden" animate="visible">
               {lockReqs.map((p) => {
                 const id = p.id ?? p.Id;
                 const busy = lockBusyId === id;
                 return (
-                  <tr key={id} className={busy ? 'admin-users__tr--busy' : ''}>
+                  <Motion.tr key={id} className={busy ? 'admin-users__tr--busy' : ''} variants={tableRow}>
                     <td>#{id}</td>
                     <td>{p.reporterUsername ?? p.ReporterUsername ?? `mod#${p.reporterId ?? p.ReporterId}`}</td>
                     <td>{p.reportedUserId ?? p.ReportedUserId}</td>
@@ -165,18 +191,18 @@ export function ModerationAdminTab() {
                         Từ chối
                       </button>
                     </td>
-                  </tr>
+                  </Motion.tr>
                 );
               })}
-            </tbody>
+            </Motion.tbody>
           </table>
           {lockReqs.length === 0 ? (
             <p className="admin-dash__card-sub">Không có đề xuất chờ.</p>
           ) : null}
         </div>
-      </div>
+      </Motion.div>
 
-      <div className="admin-dash__subcard">
+      <Motion.div className="admin-dash__subcard" variants={blockRise}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
           <h3 className="admin-dash__subcard-title">Tất cả báo cáo</h3>
           <button type="button" className="admin-dash__btn admin-dash__btn--ghost" onClick={() => void loadReports()}>
@@ -194,39 +220,22 @@ export function ModerationAdminTab() {
                 <th>Ngày</th>
               </tr>
             </thead>
-            <tbody>
+            <Motion.tbody variants={tableStagger} initial="hidden" animate="visible">
               {reports.slice(0, 80).map((r) => (
-                <tr key={r.id ?? r.Id}>
+                <Motion.tr key={r.id ?? r.Id} variants={tableRow}>
                   <td>{r.id ?? r.Id}</td>
                   <td>{r.type ?? r.Type}</td>
                   <td>{r.status ?? r.Status}</td>
                   <td>{new Date(r.createdAt ?? r.CreatedAt).toLocaleString('vi-VN')}</td>
-                </tr>
+                </Motion.tr>
               ))}
-            </tbody>
+            </Motion.tbody>
           </table>
         </div>
-      </div>
+      </Motion.div>
 
-      <div className="admin-dash__subcard">
-        <h3 className="admin-dash__subcard-title">Hiệu suất Moderator (theo báo cáo đã gán)</h3>
-        <p className="admin-dash__card-sub">Đếm theo AssignedModeratorId trong DB.</p>
-        <ul className="admin-dash__bar-list">
-          {modStats.length === 0 ? <li className="admin-dash__card-sub">Chưa có báo cáo gán mod.</li> : null}
-          {modStats.map((m) => (
-            <li key={m.id}>
-              <div className="admin-dash__bar-head">
-                <span>Moderator #{m.id}</span>
-                <strong>{m.cnt} báo cáo</strong>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="admin-dash__subcard">
+      <Motion.div className="admin-dash__subcard" variants={blockRise}>
         <h3 className="admin-dash__subcard-title">Blacklist từ khóa nhạy cảm (toàn hệ thống)</h3>
-        <p className="admin-dash__card-sub">Áp dụng khi gửi tin chat (ScanSensitiveKeywordsAsync).</p>
         {kwErr ? <div className="admin-users__alert">{kwErr}</div> : null}
         <div className="admin-dash__filter-row">
           <label>
@@ -235,7 +244,7 @@ export function ModerationAdminTab() {
           </label>
           <label>
             Mức (1–3)
-            <select className="admin-dash__select" value={newSev} onChange={(e) => setNewSev(e.target.value)}>
+            <select className="admin-dash__select" value={newSev} onChange={(e) => setNewSev(Number(e.target.value))}>
               <option value={1}>1</option>
               <option value={2}>2</option>
               <option value={3}>3</option>
@@ -258,12 +267,12 @@ export function ModerationAdminTab() {
                 <th />
               </tr>
             </thead>
-            <tbody>
+            <Motion.tbody variants={tableStagger} initial="hidden" animate="visible">
               {keywords.map((k) => {
                 const id = k.id ?? k.Id;
                 const active = k.isActive ?? k.IsActive;
                 return (
-                  <tr key={id}>
+                  <Motion.tr key={id} variants={tableRow}>
                     <td>{k.keyword ?? k.Keyword}</td>
                     <td>{k.severity ?? k.Severity}</td>
                     <td>{active ? 'Có' : 'Tắt'}</td>
@@ -275,20 +284,13 @@ export function ModerationAdminTab() {
                         Xóa
                       </button>
                     </td>
-                  </tr>
+                  </Motion.tr>
                 );
               })}
-            </tbody>
+            </Motion.tbody>
           </table>
         </div>
-      </div>
-
-      <div className="admin-dash__subcard">
-        <h3 className="admin-dash__subcard-title">Cảnh báo tự động</h3>
-        <p className="admin-dash__card-sub">
-          Đã có cảnh báo từ khóa khi gửi tin; có thể mở rộng rule engine (điểm tin cậy, rate limit) ở backend sau.
-        </p>
-      </div>
-    </div>
+      </Motion.div>
+    </Motion.div>
   );
 }

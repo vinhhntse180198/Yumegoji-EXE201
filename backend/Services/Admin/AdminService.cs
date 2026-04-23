@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using backend.Data;
 using backend.DTOs.Admin;
+using backend.Models.Admin;
 using backend.Models.Moderation;
 using AppUser = backend.Models.User.User;
 using Microsoft.EntityFrameworkCore;
@@ -384,5 +385,54 @@ public class AdminService : IAdminService
         CreatedBy = k.CreatedBy,
         CreatedAt = k.CreatedAt,
         UpdatedAt = k.UpdatedAt
+    };
+
+    public async Task<SystemAnnouncementPublicDto?> GetLatestPublishedAnnouncementAsync()
+    {
+        var row = await _db.SystemAnnouncements.AsNoTracking()
+            .Where(a => a.IsPublished && a.PublishedAt != null)
+            .OrderByDescending(a => a.PublishedAt)
+            .ThenByDescending(a => a.Id)
+            .FirstOrDefaultAsync();
+        return row == null ? null : MapAnnouncement(row);
+    }
+
+    public async Task<SystemAnnouncementPublicDto> PublishSystemAnnouncementAsync(int adminUserId, PublishSystemAnnouncementRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Title))
+            throw new ArgumentException("Tiêu đề không được để trống.");
+
+        var title = request.Title.Trim();
+        if (title.Length > 200)
+            title = title[..200];
+
+        var content = string.IsNullOrWhiteSpace(request.Content) ? string.Empty : request.Content.Trim();
+        var typeRaw = string.IsNullOrWhiteSpace(request.Type) ? "maintenance" : request.Type.Trim();
+        var type = typeRaw.Length > 30 ? typeRaw[..30] : typeRaw;
+
+        var now = DateTime.UtcNow;
+        var row = new SystemAnnouncement
+        {
+            Title = title,
+            Content = content,
+            Type = type,
+            IsPublished = true,
+            PublishedAt = now,
+            CreatedBy = adminUserId,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
+        _db.SystemAnnouncements.Add(row);
+        await _db.SaveChangesAsync();
+        return MapAnnouncement(row);
+    }
+
+    private static SystemAnnouncementPublicDto MapAnnouncement(SystemAnnouncement a) => new()
+    {
+        Id = a.Id,
+        Title = a.Title,
+        Content = a.Content,
+        Type = a.Type,
+        PublishedAt = a.PublishedAt
     };
 }

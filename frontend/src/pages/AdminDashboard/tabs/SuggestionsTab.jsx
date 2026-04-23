@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { adminService } from '../../../services/adminService';
+import { useAnimatedNumber } from '../../../hooks/useAnimatedNumber';
+
+const Motion = motion;
 
 function pct(cur, target) {
   if (!target) return 0;
@@ -9,6 +13,7 @@ function pct(cur, target) {
 export function SuggestionsTab() {
   const [ov, setOv] = useState(null);
   const [err, setErr] = useState('');
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     let cancel = false;
@@ -39,6 +44,10 @@ export function SuggestionsTab() {
     const convTarget = Math.max(1, Math.round(convCurrent + 8));
     return { revenueCurrent, revenueTarget, paidCurrent, paidTarget, convCurrent, convTarget };
   }, [ov]);
+
+  const animRev = useAnimatedNumber(kpi.revenueCurrent, { duration: 900, reduceMotion });
+  const animPaid = useAnimatedNumber(kpi.paidCurrent, { duration: 850, reduceMotion });
+  const animConv = useAnimatedNumber(kpi.convCurrent, { duration: 800, reduceMotion });
 
   const suggestionCards = useMemo(() => {
     const premium = Number(ov?.premiumUsers ?? ov?.PremiumUsers ?? 0);
@@ -75,87 +84,117 @@ export function SuggestionsTab() {
     ];
   }, [ov]);
 
-  const bars = useMemo(
+  const listReveal = useMemo(
+    () => ({
+      hidden: {},
+      visible: {
+        transition: { staggerChildren: reduceMotion ? 0 : 0.1, delayChildren: reduceMotion ? 0 : 0.05 },
+      },
+    }),
+    [reduceMotion],
+  );
+
+  const itemRise = useMemo(
+    () => ({
+      hidden: reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 22 },
+      visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } },
+    }),
+    [reduceMotion],
+  );
+
+  const goalsReveal = useMemo(
+    () => ({
+      hidden: {},
+      visible: {
+        transition: { staggerChildren: reduceMotion ? 0 : 0.12, delayChildren: reduceMotion ? 0 : 0.25 },
+      },
+    }),
+    [reduceMotion],
+  );
+
+  const goalBars = useMemo(
     () => [
       {
         key: 'revenue',
         label: 'Doanh thu mục tiêu',
         current: kpi.revenueCurrent,
         target: kpi.revenueTarget,
-        unit: 'M',
-        display: `${kpi.revenueCurrent}M / ${kpi.revenueTarget}M`,
-        color: '#16a34a',
+        color: '#8e031d',
+        display: () => `${animRev}M / ${kpi.revenueTarget}M`,
       },
       {
         key: 'paid',
         label: 'Học viên trả phí mới',
         current: kpi.paidCurrent,
         target: kpi.paidTarget,
-        unit: '',
-        display: `${kpi.paidCurrent} / ${kpi.paidTarget}`,
         color: '#6366f1',
+        display: () => `${animPaid} / ${kpi.paidTarget}`,
       },
       {
         key: 'conv',
         label: 'Tỷ lệ chuyển đổi',
         current: kpi.convCurrent,
         target: kpi.convTarget,
-        unit: '%',
-        display: `${kpi.convCurrent}% / ${kpi.convTarget}%`,
         color: '#ea580c',
+        display: () => `${animConv}% / ${kpi.convTarget}%`,
       },
     ],
-    [kpi]
+    [kpi, animRev, animPaid, animConv],
   );
 
   return (
     <div className="admin-dash__tab-inner">
-      <div className="admin-dash__ai-hero">
+      <Motion.div className="admin-dash__ai-hero" variants={itemRise} initial="hidden" animate="visible">
         <h2 className="admin-dash__ai-title">Đề xuất tối ưu hóa từ AI</h2>
-        <p className="admin-dash__ai-desc">
-          Phân tích dữ liệu thật từ API và gợi ý bốn hướng tối ưu doanh thu cùng trải nghiệm học viên.
-        </p>
-      </div>
+        <p className="admin-dash__ai-desc">Phân tích dữ liệu thật từ API và gợi ý bốn hướng tối ưu doanh thu cùng trải nghiệm học viên.</p>
+      </Motion.div>
       {err ? <div className="admin-users__alert">{err}</div> : null}
 
-      <div className="admin-dash__suggest-grid">
+      <Motion.div className="admin-dash__suggest-grid" variants={listReveal} initial="hidden" animate="visible">
         {suggestionCards.map((c) => (
-          <div key={c.title} className={`admin-dash__suggest-card admin-dash__suggest-card--${c.tone}`}>
+          <Motion.div key={c.title} className={`admin-dash__suggest-card admin-dash__suggest-card--${c.tone}`} variants={itemRise}>
             <span className="admin-dash__suggest-tag">{c.tag}</span>
             <h3 className="admin-dash__suggest-title">{c.title}</h3>
             <p className="admin-dash__suggest-body">{c.body}</p>
             <button type="button" className="admin-dash__suggest-link">
               Xem chi tiết →
             </button>
-          </div>
+          </Motion.div>
         ))}
-      </div>
+      </Motion.div>
 
-      <div className="admin-dash__card admin-dash__card--goals">
+      <Motion.div className="admin-dash__card admin-dash__card--goals" variants={itemRise} initial="hidden" animate="visible">
         <div className="admin-dash__goals-head">
           <div>
-            <h3 className="admin-dash__card-title">Mục tiêu tháng {monthLabel}</h3>
-            <p className="admin-dash__card-sub">KPI theo dõi lấy từ API thật (mục tiêu đang tính tự động theo dữ liệu hiện tại).</p>
+            <h3 className="admin-dash__card-title admin-dash__card-title--serif">Mục tiêu tháng {monthLabel}</h3>
+            <p className="admin-dash__card-sub">KPI theo dõi từ API (mục tiêu tự tính theo dữ liệu hiện tại).</p>
           </div>
         </div>
-        <ul className="admin-dash__goal-list">
-          {bars.map((b) => (
-            <li key={b.key}>
+        <Motion.ul className="admin-dash__goal-list" variants={goalsReveal} initial="hidden" animate="visible">
+          {goalBars.map((b, idx) => (
+            <Motion.li key={b.key} variants={itemRise}>
               <div className="admin-dash__goal-row">
                 <span>{b.label}</span>
-                <strong>{b.display}</strong>
+                <strong>{b.display()}</strong>
               </div>
               <div className="admin-dash__goal-track">
-                <div
+                <Motion.div
                   className="admin-dash__goal-fill"
-                  style={{ width: `${pct(b.current, b.target)}%`, background: b.color }}
+                  initial={reduceMotion ? { width: `${pct(b.current, b.target)}%` } : { width: '0%' }}
+                  animate={{ width: `${pct(b.current, b.target)}%` }}
+                  transition={{
+                    duration: reduceMotion ? 0 : 0.95,
+                    ease: [0.22, 1, 0.36, 1],
+                    delay: reduceMotion ? 0 : 0.12 + idx * 0.1,
+                  }}
+                  style={{ background: b.color }}
                 />
               </div>
               <span className="admin-dash__goal-pct">{pct(b.current, b.target)}%</span>
-            </li>
+            </Motion.li>
           ))}
-        </ul>
-      </div>
+        </Motion.ul>
+      </Motion.div>
     </div>
   );
 }

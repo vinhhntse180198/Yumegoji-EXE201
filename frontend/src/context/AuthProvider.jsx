@@ -4,7 +4,9 @@ import { AuthContext } from './authContext';
 
 function readUserFromStorage() {
   if (!authService.getStoredToken()) return null;
-  return authService.getStoredUser() ?? null;
+  const raw = authService.getStoredUser() ?? null;
+  if (!raw) return null;
+  return authService.mergeUserWithRoleFromToken(raw);
 }
 
 export function AuthProvider({ children }) {
@@ -20,7 +22,7 @@ export function AuthProvider({ children }) {
       setLoading(false);
       return;
     }
-    setUser(authService.getStoredUser());
+    setUser(readUserFromStorage());
     setLoading(false);
   }, []);
 
@@ -45,7 +47,7 @@ export function AuthProvider({ children }) {
       void authService
         .getUserById(id)
         .then((u) => {
-          if (u) setUser(u);
+          if (u) setUser(authService.mergeUserWithRoleFromToken(u));
         })
         .catch(() => {});
     }
@@ -55,7 +57,8 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (credentials) => {
     const data = await authService.login(credentials);
-    setUser(data.user || authService.getStoredUser());
+    const raw = data.user || authService.getStoredUser();
+    setUser(raw ? authService.mergeUserWithRoleFromToken(raw) : null);
     if (typeof data?.needsPlacementTest === 'boolean') {
       setNeedsPlacementTest(!!data.needsPlacementTest);
     }
@@ -64,7 +67,8 @@ export function AuthProvider({ children }) {
 
   const loginWithGoogle = useCallback(async (payload) => {
     const data = await authService.loginWithGoogle(payload);
-    setUser(data.user || authService.getStoredUser());
+    const raw = data.user || authService.getStoredUser();
+    setUser(raw ? authService.mergeUserWithRoleFromToken(raw) : null);
     if (typeof data?.needsPlacementTest === 'boolean') {
       setNeedsPlacementTest(!!data.needsPlacementTest);
     }

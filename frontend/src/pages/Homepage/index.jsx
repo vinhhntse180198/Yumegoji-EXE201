@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../data/routes';
 import { ChatbotWidget } from '../../components/support/ChatbotWidget';
 import { HOMEPAGE_CTA, HOMEPAGE_HERO, HOMEPAGE_METHOD, HOMEPAGE_TESTIMONIALS, HOMEPAGE_WHY } from '../../data/homepageContent';
 import { HeroImageCarousel } from '../../components/home/HeroImageCarousel';
 import { useAuth } from '../../hooks/useAuth';
 import { fetchMyProgressSummary } from '../../services/learningProgressService';
+import { getPostLoginRoute } from '../../utils/postLoginRoute';
+import { isStaffUser } from '../../utils/roles';
 
 function pick(obj, ...keys) {
   for (const k of keys) {
@@ -40,8 +42,18 @@ function aggregateLessonProgress(byLevel) {
 export default function Homepage() {
   const { isAuthenticated, user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [progressSummary, setProgressSummary] = useState(null);
   const [progressLoading, setProgressLoading] = useState(false);
+
+  /** Admin / moderator không dùng landing học viên — chuyển thẳng khu vực quản trị. */
+  useEffect(() => {
+    if (!isAuthenticated || !user) return;
+    const dest = getPostLoginRoute(user, ROUTES.HOME);
+    if (dest !== ROUTES.HOME) {
+      navigate(dest, { replace: true });
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const loadProgress = useCallback(async () => {
     setProgressLoading(true);
@@ -124,6 +136,18 @@ export default function Homepage() {
 
   const hero = useMemo(() => {
     if (!isAuthenticated) return HOMEPAGE_HERO;
+    if (isStaffUser(user)) {
+      return {
+        ...HOMEPAGE_HERO,
+        badge: memberFirstName ? `Chào mừng quay lại, ${memberFirstName} 👋` : 'Chào mừng quay lại 👋',
+        title: 'Khu vực vận hành',
+        highlight: 'YumeGo-ji.',
+        description:
+          'Tài khoản quản trị / điều hành: vào bảng điều khiển để xem người dùng, doanh thu và cấu hình — không dùng lộ trình học viên tại đây.',
+        primaryCta: 'Vào bảng quản trị',
+        secondaryCta: 'Mở Chat',
+      };
+    }
     return {
       ...HOMEPAGE_HERO,
       badge: memberFirstName ? `Chào mừng quay lại, ${memberFirstName} 👋` : 'Chào mừng quay lại 👋',
@@ -134,7 +158,7 @@ export default function Homepage() {
       primaryCta: 'Tiếp tục học',
       secondaryCta: 'Vào Dashboard',
     };
-  }, [isAuthenticated, memberFirstName]);
+  }, [isAuthenticated, memberFirstName, user]);
 
   /** Anchor trong URL (/#method, …) — cuộn tới section sau khi SPA đã render (khách / link từ footer). */
   useEffect(() => {
@@ -185,16 +209,22 @@ export default function Homepage() {
             <p className="sn-hero__desc">{hero.description}</p>
             <div className="sn-hero__cta">
               {isAuthenticated ? (
-                <Link to={ROUTES.LEARN} className="btn btn--primary btn--lg sn-btn--gradient">
-                  {hero.primaryCta}
-                </Link>
+                isStaffUser(user) ? (
+                  <Link to={getPostLoginRoute(user, ROUTES.HOME)} className="btn btn--primary btn--lg sn-btn--gradient">
+                    {hero.primaryCta}
+                  </Link>
+                ) : (
+                  <Link to={ROUTES.LEARN} className="btn btn--primary btn--lg sn-btn--gradient">
+                    {hero.primaryCta}
+                  </Link>
+                )
               ) : (
                 <Link to={ROUTES.REGISTER} className="btn btn--primary btn--lg sn-btn--gradient">
                   {hero.primaryCta}
                 </Link>
               )}
               {isAuthenticated ? (
-                <Link to={ROUTES.DASHBOARD} className="btn btn--outline btn--lg sn-btn--soft">
+                <Link to={isStaffUser(user) ? ROUTES.CHAT : ROUTES.DASHBOARD} className="btn btn--outline btn--lg sn-btn--soft">
                   {hero.secondaryCta}
                 </Link>
               ) : (

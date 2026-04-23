@@ -23,6 +23,7 @@ import {
 } from '../../services/gameService';
 import { pickRandomKanaCombatSprites } from '../../assets/kanaCombatSprites';
 import { pickRandomKanaCombatBackdrop } from '../../assets/kanaCombatBackdrops';
+import { PlayKurenaiSummary } from './PlayKurenaiSummary';
 
 const Motion = motion;
 
@@ -606,6 +607,10 @@ export default function KanaMatchGame() {
   const pendingDoubleRef = useRef(false);
   const [doubleArmed, setDoubleArmed] = useState(false);
   const [inventory, setInventory] = useState(null);
+  /** Chỉ số đáp án bị ẩn sau 50:50 (theo gợi ý server). */
+  const [fiftyHiddenIndices, setFiftyHiddenIndices] = useState([]);
+  const [fiftyUsedOnQuestion, setFiftyUsedOnQuestion] = useState(false);
+  const [fiftyBusy, setFiftyBusy] = useState(false);
   const [gameMeta, setGameMeta] = useState(null);
   const [apiCorrectCount, setApiCorrectCount] = useState(0);
   const apiCorrectRef = useRef(0);
@@ -892,6 +897,11 @@ export default function KanaMatchGame() {
   useEffect(() => {
     pendingDoubleRef.current = false;
     setDoubleArmed(false);
+  }, [index]);
+
+  useEffect(() => {
+    setFiftyHiddenIndices([]);
+    setFiftyUsedOnQuestion(false);
   }, [index]);
 
   useEffect(() => {
@@ -1316,9 +1326,35 @@ export default function KanaMatchGame() {
     return sum;
   };
 
-  /** 50:50 chưa nối gợi ý server — luôn hiện 0, nút tắt (tránh nhầm với số trong túi). */
-  const FIFTY_FIFTY_USABLE = false;
-  const invQtyFiftyFifty = () => (FIFTY_FIFTY_USABLE ? invQty('fifty-fifty') : 0);
+  const onUseFiftyFifty = async () => {
+    if (!apiMode || sessionId == null || busyRef.current || fiftyBusy) return;
+    const qcur = questions[index];
+    const qid = qcur?.id;
+    if (!qid || fiftyUsedOnQuestion) return;
+    setFiftyBusy(true);
+    setError('');
+    try {
+      const res = await postInventoryPowerUp({
+        sessionId,
+        powerUpSlug: 'fifty-fifty',
+        questionId: qid,
+      });
+      const raw = res?.hiddenOptionIndices ?? res?.HiddenOptionIndices ?? [];
+      const next = Array.isArray(raw)
+        ? raw.map((x) => Number(x)).filter((n) => Number.isFinite(n) && n >= 0)
+        : [];
+      setFiftyHiddenIndices((prev) => {
+        const merged = new Set([...prev, ...next]);
+        return [...merged];
+      });
+      setFiftyUsedOnQuestion(true);
+      await refreshInventory();
+    } catch (e) {
+      setError(apiErrorMessage(e) || 'Không dùng được 50:50.');
+    } finally {
+      setFiftyBusy(false);
+    }
+  };
 
   const onUseHeart = async () => {
     if (!apiMode || sessionId == null || busyRef.current) return;
@@ -1607,76 +1643,82 @@ export default function KanaMatchGame() {
     const acc = p.accuracyPercent ?? p.AccuracyPercent;
     const exp = p.expEarned ?? p.ExpEarned;
     const xu = p.xuEarned ?? p.XuEarned;
-    const sumShell = useArcadeShell
-      ? `play-game play-summary play-game--arcade play-arcade-shell--light play-arcade--${arcadeTheme} play-summary--arcade`
-      : 'play-game play-summary';
     const kanaVictory = summary.kanaVictory === true;
+    const combatScore = Number(summary.combatScore ?? p.combatScore ?? score) || 0;
+
+    let kicker = 'Tập luyện hoàn tất';
+    let headline = 'Kết thúc phiên';
+    let subline =
+      'Mỗi lần chơi đều giúp não ghi nhớ tốt hơn. Bạn có thể chơi lại hoặc chọn game khác trong Play.';
+    if (kanaVictory) {
+      kicker = 'Chiến thắng';
+      headline = 'Ninja Hiro thắng trận!';
+      subline = `Bạn đạt ${KANA_COMBAT_WIN} điểm trận — hạ Yurei liên tiếp (mỗi lần hạ +${KANA_COMBAT_KILL}, mỗi đòn đúng −${KANA_COMBAT_DMG} HP).`;
+    } else if (ranOutOfHearts) {
+      kicker = 'Phiên kết thúc';
+      headline = 'Hết mạng rồi';
+      subline =
+        'Bạn đã hết mạng — phiên kết thúc sớm. Điểm, EXP và Xu vẫn theo số câu đúng và điểm đã ghi nhận. Chọn Chơi lại để về màn chọn số câu.';
+    } else if (score >= 95 && totalQ > 0 && correct === totalQ) {
+      headline = 'Kết quả tuyệt vời';
+      subline =
+        'Sự kiên nhẫn và tập trung của bạn đã mang lại kết quả xứng đáng. Hãy tiếp tục giữ vững tinh thần này!';
+    } else if (score >= 75) {
+      headline = 'Làm rất tốt!';
+      subline = 'Bạn đang tiến bộ ổn định — thêm vài phiên nữa để khắc sâu kiến thức nhé.';
+    }
+
+    const showPerfect = !kanaVictory && !ranOutOfHearts && totalQ > 0 && correct === totalQ;
+    const ring = kanaVictory
+      ? { value: combatScore, max: KANA_COMBAT_WIN, centerLabel: 'ĐIỂM TRẬN' }
+      : { value: score, max: 100, centerLabel: 'ĐIỂM' };
+
+    const statsLine =
+      correct != null && totalQ != null
+        ? `Đúng ${correct}/${totalQ}${acc != null ? ` (${Number(acc).toFixed(0)}%)` : ''}`
+        : null;
+
     return (
-      <div className={sumShell}>
-        <h1 className="play-summary__title">
-          {kanaVictory ? 'CHIẾN THẮNG' : ranOutOfHearts ? 'THUA' : 'Kết thúc'}
-        </h1>
-        <p className="play-summary__score">
-          {kanaVictory ? (
+      <PlayKurenaiSummary
+        kicker={kicker}
+        headline={headline}
+        subline={subline}
+        ring={ring}
+        showPerfect={showPerfect}
+        exp={exp}
+        xu={xu}
+        alwaysShowRewardStrip={summary.mode === 'api'}
+        rewardsLoading={false}
+        statsLine={statsLine}
+        links={
+          summary.mode === 'local' ? null : (
             <>
-              Điểm trận: {summary.combatScore ?? p.combatScore ?? score}/{KANA_COMBAT_WIN}
+              <Link to={`${ROUTES.PLAY}/achievements`}>Thành tích</Link>
+              <span aria-hidden> · </span>
+              <Link to={`${ROUTES.PLAY}/leaderboard`}>Bảng xếp hạng</Link>
             </>
-          ) : (
-            <>Điểm: {score}/100</>
-          )}
-        </p>
-        {kanaVictory ? (
-          <p className="play-summary__line">
-            Bạn đạt {KANA_COMBAT_WIN} điểm trận — hạ Yurei liên tiếp (mỗi lần hạ +{KANA_COMBAT_KILL}, mỗi đòn đúng −
-            {KANA_COMBAT_DMG} HP).
-          </p>
-        ) : null}
-        {ranOutOfHearts ? (
-          <p className="play-summary__line play-summary__line--hearts">
-            Bạn đã hết mạng — phiên kết thúc sớm. <strong>Điểm, EXP và Xu</strong> vẫn theo số câu đúng và điểm đã ghi
-            nhận. Chọn &quot;Chơi lại&quot; để về màn chọn số câu.
-          </p>
-        ) : null}
+          )
+        }
+        onPlayAgain={() => {
+          setSummary(null);
+          setPhase('setup');
+        }}
+        secondaryTo={ROUTES.PLAY}
+        secondaryLabel="Danh sách game"
+      >
         {summary.mode === 'api' ? (
-          <p className="play-summary__hint">
+          <p key="api-hint" className="play-kurenai-summary__fineprint">
             Điểm phiên theo thang <strong>0–100</strong> (≈ 100 chia số câu; ×2 cho một câu đúng khi dùng vật phẩm).
             Phần thưởng cuối phiên: <strong>10 EXP</strong> và <strong>1 xu</strong> mỗi câu đúng (tối đa theo cấu hình
             game).
           </p>
         ) : null}
-        {correct != null && totalQ != null ? (
-          <p className="play-summary__line">
-            Đúng {correct}/{totalQ}
-            {acc != null ? ` (${Number(acc).toFixed(0)}%)` : ''}
+        {summary.mode === 'local' ? (
+          <p key="local-hint" className="play-kurenai-summary__fineprint">
+            Chế độ luyện trên máy (API không khả dụng hoặc chưa seed DB).
           </p>
         ) : null}
-        {exp != null ? <p className="play-summary__line">EXP: +{exp}</p> : null}
-        {xu != null ? <p className="play-summary__line">Xu: +{xu}</p> : null}
-        {summary.mode === 'local' ? (
-          <p className="play-summary__hint">Chế độ luyện trên máy (API không khả dụng hoặc chưa seed DB).</p>
-        ) : (
-          <p className="play-summary__hint play-summary__links">
-            <Link to={`${ROUTES.PLAY}/achievements`}>Thành tích</Link>
-            <span aria-hidden> · </span>
-            <Link to={`${ROUTES.PLAY}/leaderboard`}>Bảng xếp hạng</Link>
-          </p>
-        )}
-        <div className="play-summary__actions">
-          <button
-            type="button"
-            className="play-btn play-btn--primary"
-            onClick={() => {
-              setSummary(null);
-              setPhase('setup');
-            }}
-          >
-            Chơi lại
-          </button>
-          <Link className="play-btn play-btn--ghost" to={ROUTES.PLAY}>
-            Danh sách game
-          </Link>
-        </div>
-      </div>
+      </PlayKurenaiSummary>
     );
   }
 
@@ -1735,6 +1777,12 @@ export default function KanaMatchGame() {
                 : promptLabel;
 
   const powerShell = useArcadeShell ? 'play-arcade__power play-arcade__power--icons' : 'play-power play-power--icons';
+  const fiftyFiftyDisabled =
+    !q?.id ||
+    showSentenceUI ||
+    invQty('fifty-fifty') <= 0 ||
+    fiftyUsedOnQuestion ||
+    fiftyBusy;
   const powerUpBar =
     apiMode && !feedback ? (
       <div className={powerShell} aria-label="Vật phẩm">
@@ -1745,15 +1793,16 @@ export default function KanaMatchGame() {
             type="button"
             className={
               useArcadeShell
-                ? 'play-arcade__power-icon play-arcade__power-icon--off'
-                : 'play-power__icon play-power__icon--off'
+                ? `play-arcade__power-icon${fiftyFiftyDisabled ? ' play-arcade__power-icon--off' : ''}`
+                : `play-power__icon${fiftyFiftyDisabled ? ' play-power__icon--off' : ''}`
             }
-            disabled
-            title="50:50 — đang phát triển (gợi ý từ server). Mua tại cửa hàng khi đã mở tính năng."
+            disabled={fiftyFiftyDisabled}
+            title="50:50 — loại 2 đáp án sai (trừ 1 vật phẩm; chỉ số do server chọn)."
+            onClick={onUseFiftyFifty}
           >
             <img src={artPowerup5050} alt="" className="play-power__pu-img" />
             <span className="play-power__pu-qty" aria-hidden>
-              {invQtyFiftyFifty()}
+              {invQty('fifty-fifty')}
             </span>
             <span className="visually-hidden">50:50</span>
           </button>
@@ -2051,6 +2100,7 @@ export default function KanaMatchGame() {
                 </div>
                 <div className="play-arcade__options">
                   {q.options.map((opt, i) => {
+                    if (fiftyHiddenIndices.includes(i)) return null;
                     let cls = 'play-arcade__opt';
                     if (feedback) {
                       if (feedback.correctIndex === i) cls += ' play-arcade__opt--correct';
@@ -2124,6 +2174,7 @@ export default function KanaMatchGame() {
           </div>
           <div className="play-game__options">
             {q.options.map((opt, i) => {
+              if (fiftyHiddenIndices.includes(i)) return null;
               let cls = 'play-opt';
               if (feedback) {
                 if (feedback.correctIndex === i) cls += ' play-opt--correct';

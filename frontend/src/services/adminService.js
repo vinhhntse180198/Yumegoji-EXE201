@@ -49,4 +49,14 @@ export const adminService = {
     const { data } = await adminApi.rejectPremiumRequest(id, { note });
     return data ?? null;
   },
+
+  async publishSystemAnnouncement({ title, content, type }) {
+    const { data } = await adminApi.publishSystemAnnouncement({ title, content, type });
+    return data ?? null;
+  },
+
+  async requestDataBackup() {
+    const { data } = await adminApi.requestDataBackup();
+    return data ?? null;
+  },
 };

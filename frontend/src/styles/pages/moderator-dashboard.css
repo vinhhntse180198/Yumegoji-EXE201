@@ -1126,6 +1126,27 @@ html[data-theme='dark'] .mod-dash__inline-hint--warn {
   line-height: 1.1;
 }
 
+.mod-dash__trend-chart--monthly {
+  justify-content: center;
+  gap: 1.75rem;
+  min-height: 150px;
+  flex-wrap: nowrap;
+}
+
+.mod-dash__trend-col--monthly {
+  flex: 1 1 88px;
+  max-width: 160px;
+}
+
+.mod-dash__trend-col--monthly .mod-dash__trend-bars {
+  height: 120px;
+}
+
+.mod-dash__trend-col--monthly .mod-dash__trend-date {
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
 .mod-dash__inline-hint {
   margin-top: 0.5rem;
   font-size: 0.8rem;
@@ -4062,4 +4083,478 @@ html[data-theme='light'] .mod-recon__bubble-body {
   line-height: 1.55;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+/* ========== Moderator — Kurenai Modern (sidebar + Sakura canvas) ========== */
+.mod-dash--kurenai {
+  --mod-kurenai: #8e031d;
+  --mod-kurenai-deep: #6b0216;
+  --mod-cream: #faf7f2;
+  --mod-sidebar: #1a1214;
+  --mod-sidebar-muted: rgba(254, 242, 242, 0.55);
+  display: flex;
+  min-height: 100%;
+  align-items: stretch;
+  background: var(--mod-cream);
+  color: #1c1416;
+  padding-bottom: 0;
+}
+
+html[data-theme='dark'] .mod-dash--kurenai {
+  --mod-cream: #0f1114;
+  --mod-sidebar: #0c0a0b;
+  --mod-sidebar-muted: rgba(248, 250, 252, 0.45);
+  color: #f1f5f9;
+}
+
+.mod-dash__k-side {
+  width: min(268px, 100%);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.2rem 0.95rem 1rem;
+  background: linear-gradient(180deg, #221a1c 0%, var(--mod-sidebar) 48%, #120e0f 100%);
+  color: #fef2f2;
+  border-right: 1px solid rgba(142, 3, 29, 0.38);
+  min-height: 100%;
+}
+
+.mod-dash__k-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.15rem 0.35rem 0.5rem;
+}
+
+.mod-dash__k-brand-mark {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(142, 3, 29, 0.95), #fb7185);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.35);
+}
+
+.mod-dash__k-brand-title {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: normal;
+  color: #fff7f7;
+}
+
+.mod-dash__k-brand-sub {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mod-sidebar-muted);
+}
+
+.mod-dash__k-nav {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.mod-dash__k-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.55rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--mod-sidebar-muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    color 0.18s,
+    border-color 0.18s;
+}
+
+.mod-dash__k-link:hover {
+  color: #fff7f7;
+  border-color: rgba(251, 113, 133, 0.28);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.mod-dash__k-link--active {
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--mod-kurenai);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+}
+
+.mod-dash__k-link-ico {
+  width: 1.35rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.mod-dash__k-link-label {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+}
+
+.mod-dash__k-badge {
+  flex-shrink: 0;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(142, 3, 29, 0.12);
+  color: var(--mod-kurenai);
+}
+
+.mod-dash__k-link--active .mod-dash__k-badge {
+  background: rgba(142, 3, 29, 0.14);
+  color: var(--mod-kurenai-deep);
+}
+
+.mod-dash__k-foot {
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mod-dash__k-user {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.45rem 0.35rem;
+}
+
+.mod-dash__k-user-av {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #8e031d, #fb7185);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mod-dash__k-user-name {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #fff7f7;
+}
+
+.mod-dash__k-user-role {
+  font-size: 0.75rem;
+  color: var(--mod-sidebar-muted);
+  margin-top: 0.08rem;
+}
+
+.mod-dash__k-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--mod-cream);
+}
+
+.mod-dash__k-head {
+  padding: 1.2rem 1.6rem 0.85rem;
+  border-bottom: 1px solid rgba(26, 21, 22, 0.08);
+  background: color-mix(in srgb, var(--mod-cream) 92%, #fff);
+}
+
+html[data-theme='dark'] .mod-dash__k-head {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+  background: color-mix(in srgb, var(--mod-cream) 88%, #000);
+}
+
+.mod-dash__k-page-title {
+  margin: 0;
+  font-size: clamp(1.45rem, 2.2vw, 1.85rem);
+  font-weight: 700;
+  color: var(--mod-kurenai-deep);
+  letter-spacing: normal;
+}
+
+html[data-theme='dark'] .mod-dash__k-page-title {
+  color: #fecdd3;
+}
+
+.mod-dash__k-page-sub {
+  margin: 0.35rem 0 0;
+  font-size: 0.92rem;
+  color: #64748b;
+  max-width: 40rem;
+}
+
+html[data-theme='dark'] .mod-dash__k-page-sub {
+  color: #94a3b8;
+}
+
+.mod-dash__k-welcome {
+  margin: 0.35rem 0 0;
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+html[data-theme='dark'] .mod-dash__k-welcome {
+  color: #94a3b8;
+}
+
+.mod-dash__k-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.85rem;
+  padding: 1rem 1.6rem;
+}
+
+.mod-dash__k-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1rem 1.1rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(142, 3, 29, 0.1);
+  box-shadow: 0 6px 22px rgba(26, 21, 22, 0.06);
+  border-left: 4px solid rgba(148, 163, 184, 0.5);
+}
+
+html[data-theme='dark'] .mod-dash__k-stat {
+  background: rgba(22, 24, 28, 0.92);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.mod-dash__k-stat--amber {
+  border-left-color: #fbbf24;
+}
+
+.mod-dash__k-stat--green {
+  border-left-color: #34d399;
+}
+
+.mod-dash__k-stat--kurenai {
+  border-left-color: var(--mod-kurenai);
+}
+
+.mod-dash__k-stat--deep {
+  border-left-color: #4c0510;
+}
+
+.mod-dash__k-stat-ico {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  background: rgba(142, 3, 29, 0.06);
+}
+
+.mod-dash__k-stat-value {
+  font-size: 1.55rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #1c1416;
+}
+
+html[data-theme='dark'] .mod-dash__k-stat-value {
+  color: #f8fafc;
+}
+
+.mod-dash__k-stat-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-top: 0.15rem;
+}
+
+html[data-theme='dark'] .mod-dash__k-stat-label {
+  color: #94a3b8;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mod-dash--kurenai .mod-dash__k-stat {
+    animation: mod-dash-k-stat-rise 0.52s ease backwards;
+  }
+
+  .mod-dash--kurenai .mod-dash__k-stat:nth-child(1) {
+    animation-delay: 0.04s;
+  }
+
+  .mod-dash--kurenai .mod-dash__k-stat:nth-child(2) {
+    animation-delay: 0.1s;
+  }
+
+  .mod-dash--kurenai .mod-dash__k-stat:nth-child(3) {
+    animation-delay: 0.16s;
+  }
+
+  .mod-dash--kurenai .mod-dash__k-stat:nth-child(4) {
+    animation-delay: 0.22s;
+  }
+}
+
+@keyframes mod-dash-k-stat-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mod-dash__k-canvas {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.mod-dash__k-washi {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-color: var(--mod-cream);
+  background-image:
+    radial-gradient(ellipse 120% 80% at 50% -20%, rgba(142, 3, 29, 0.06), transparent 55%),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(142, 3, 29, 0.02) 2px,
+      rgba(142, 3, 29, 0.02) 3px
+    ),
+    linear-gradient(165deg, rgba(255, 255, 255, 0.5) 0%, transparent 42%);
+}
+
+html[data-theme='dark'] .mod-dash__k-washi {
+  background-image: linear-gradient(165deg, rgba(30, 27, 28, 0.55) 0%, transparent 50%);
+}
+
+.mod-dash__k-sakura {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.34;
+}
+
+html[data-theme='dark'] .mod-dash__k-sakura {
+  opacity: 0.2;
+}
+
+.mod-dash__k-body {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1.15rem 1.6rem 2.25rem;
+}
+
+.mod-dash__k-body.mod-dash__body--content-hub {
+  max-width: 1320px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.mod-dash__k-motion {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.mod-dash--kurenai .mod-dash__panel {
+  background: rgba(255, 255, 255, 0.94);
+  border-color: rgba(142, 3, 29, 0.12);
+  box-shadow: 0 12px 36px rgba(26, 21, 22, 0.06);
+}
+
+html[data-theme='dark'] .mod-dash--kurenai .mod-dash__panel {
+  background: rgba(22, 24, 28, 0.94);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.mod-dash--kurenai .mod-dash__mini-stat--purple {
+  border-left-color: var(--mod-kurenai);
+}
+
+.mod-dash--kurenai .mod-dash__trend-bar--new {
+  background: linear-gradient(180deg, #c4707e, var(--mod-kurenai));
+}
+
+.mod-dash--kurenai .mod-dash__trend-bar {
+  transition:
+    height 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.35s ease;
+}
+
+.mod-dash--kurenai .mod-dash__seg-btn--on {
+  background: var(--mod-kurenai);
+  border-color: var(--mod-kurenai);
+  color: #fff;
+}
+
+@media (max-width: 900px) {
+  .mod-dash--kurenai {
+    flex-direction: column;
+  }
+
+  .mod-dash__k-side {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    min-height: 0;
+  }
+
+  .mod-dash__k-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+    max-height: none;
+  }
+
+  .mod-dash__k-link {
+    flex: 1 1 44%;
+  }
+
+  .mod-dash__k-foot {
+    width: 100%;
+  }
 }

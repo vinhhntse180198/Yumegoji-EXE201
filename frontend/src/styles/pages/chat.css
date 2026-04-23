@@ -1089,10 +1089,6 @@ html[data-theme='dark'] .moji-chat__sidebar-unified {
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.moji-chat__sidebar-unified .moji-chat__primary-tutor-btn {
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
-}
-
 .moji-chat__sidebar-unified .moji-chat__primary-new-link {
   color: #fda4af;
 }
@@ -1113,7 +1109,7 @@ html[data-theme='dark'] .moji-chat__sidebar-unified {
 .moji-chat__sidebar-unified .moji-chat__panel2-title,
 .moji-chat__sidebar-unified .moji-chat__panel2-title--unified {
   color: #f8fafc;
-  padding-top: 0.65rem;
+  padding-top: 0.35rem;
 }
 
 .moji-chat__sidebar-unified .moji-chat__sidebar-notice,
@@ -1303,32 +1299,13 @@ html[data-theme='dark'] .moji-chat__primary-nav {
   border-top: 1px solid var(--moji-border);
 }
 
-.moji-chat__primary-tutor-btn {
-  width: 100%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.7rem 0.85rem;
-  border: none;
-  border-radius: 14px;
-  background: linear-gradient(145deg, #b31b3b 0%, #d12a4a 100%);
-  color: #fff;
-  font-size: 0.88rem;
-  font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 10px 26px rgba(179, 27, 59, 0.28);
-  transition: transform 0.12s, filter 0.15s, box-shadow 0.15s;
+.moji-chat__primary-cta-block--compact {
+  padding: 0.3rem 1rem 0.4rem;
+  gap: 0;
 }
 
-.moji-chat__primary-tutor-btn:hover {
-  filter: brightness(1.04);
-  transform: translateY(-1px);
-}
-
-.moji-chat__primary-tutor-ico {
-  font-size: 1.1rem;
-  line-height: 1;
+.moji-chat__sidebar-unified .moji-chat__primary-cta-block--compact {
+  padding: 0.28rem 1rem 0.35rem;
 }
 
 .moji-chat__primary-new-link {
@@ -2931,6 +2908,7 @@ html[data-theme='dark'] .moji-chat__path-milestone--on {
 }
 
 .moji-chat__main {
+  position: relative;
   flex: 1;
   min-width: 0;
   min-height: 0;
@@ -2941,6 +2919,72 @@ html[data-theme='dark'] .moji-chat__path-milestone--on {
 
 html[data-theme='dark'] .moji-chat__main {
   background: linear-gradient(180deg, #0b0f18 0%, #121826 100%);
+}
+
+.moji-chat__main-sakura-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.moji-chat__main-sakura {
+  position: absolute;
+  inset: 0;
+  opacity: 0.42;
+}
+
+.moji-chat__main-sakura--far {
+  transform: scale(1.02);
+  opacity: 0.28;
+}
+
+.moji-chat__main-sakura--mid {
+  opacity: 0.38;
+}
+
+html[data-theme='dark'] .moji-chat__main-sakura {
+  opacity: 0.32;
+}
+
+html[data-theme='dark'] .moji-chat__main-sakura--far {
+  opacity: 0.2;
+}
+
+html[data-theme='dark'] .moji-chat__main-sakura--mid {
+  opacity: 0.28;
+}
+
+.moji-chat__main-surface {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.moji-chat__main-motion {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.moji-chat__sidebar-unified__grow-motion {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.moji-chat__path-aside-motion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 0;
 }
 
 /* Empty state */
@@ -5800,6 +5844,15 @@ html[data-theme='dark'] .moji-chat__banner-warn {
   background: linear-gradient(180deg, #eef2f7 0%, #f8fafc 100%);
 }
 
+/* Cột chat 3 cột: nền phòng hơi trong để thấy lớp Sakura phía dưới */
+.moji-chat--sakura-3col .moji-chat__room--pro {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, #eef2f7 70%, transparent) 0%,
+    color-mix(in srgb, #f8fafc 62%, transparent) 100%
+  );
+}
+
 .moji-chat__room-head--pro {
   backdrop-filter: blur(10px);
   background: color-mix(in srgb, var(--moji-panel) 86%, #fff);
@@ -5882,6 +5935,14 @@ html[data-theme='dark'] .moji-chat__room--pro {
   background: linear-gradient(180deg, #0b0f18 0%, #121826 100%);
 }
 
+html[data-theme='dark'] .moji-chat--sakura-3col .moji-chat__room--pro {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, #0b0f18 68%, transparent) 0%,
+    color-mix(in srgb, #121826 58%, transparent) 100%
+  );
+}
+
 html[data-theme='dark'] .moji-chat__room-head--pro {
   background: color-mix(in srgb, var(--moji-panel) 92%, transparent);
 }
@@ -5949,12 +6010,6 @@ html[data-theme='dark'] .moji-chat__banner-error {
     gap: 0.35rem;
     padding: 0.35rem 0.5rem;
     border-top: 1px solid var(--moji-border);
-  }
-
-  .moji-chat__primary-tutor-btn {
-    flex: 1 1 auto;
-    min-width: 10rem;
-    max-width: 100%;
   }
 
   .moji-chat__primary-new-link {

@@ -27,4 +27,8 @@ export const adminApi = {
 
   rejectPremiumRequest: (id, body) =>
     http.post(`/api/Payment/admin/premium/requests/${id}/reject`, body),
+
+  publishSystemAnnouncement: (body) => http.post(`${ADMIN_BASE}/system-announcements/publish`, body),
+
+  requestDataBackup: () => http.post(`${ADMIN_BASE}/data-backup-request`),
 };

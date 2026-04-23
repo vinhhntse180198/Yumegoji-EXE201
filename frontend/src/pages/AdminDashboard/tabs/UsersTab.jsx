@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { authService } from '../../../services/authService';
 import { adminService } from '../../../services/adminService';
 import { moderationService } from '../../../services/moderationService';
+
+const Motion = motion;
 
 const ROLES = [
   { value: '', label: 'Mọi vai trò' },
@@ -75,8 +78,59 @@ export function UsersTab() {
   const [warnings, setWarnings] = useState([]);
   const [warnLoading, setWarnLoading] = useState(false);
   const [overview, setOverview] = useState(null);
+  const reduceMotion = useReducedMotion();
 
   const myId = authService.getEffectiveUserId();
+
+  const listReveal = useMemo(
+    () => ({
+      hidden: {},
+      visible: {
+        transition: {
+          staggerChildren: reduceMotion ? 0 : 0.07,
+          delayChildren: reduceMotion ? 0 : 0.04,
+        },
+      },
+    }),
+    [reduceMotion],
+  );
+
+  const statRise = useMemo(
+    () => ({
+      hidden: reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 },
+      visible: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: 0.38, ease: [0.22, 1, 0.36, 1] },
+      },
+    }),
+    [reduceMotion],
+  );
+
+  const tableReveal = useMemo(
+    () => ({
+      hidden: {},
+      visible: {
+        transition: {
+          staggerChildren: reduceMotion ? 0 : 0.045,
+          delayChildren: reduceMotion ? 0 : 0.06,
+        },
+      },
+    }),
+    [reduceMotion],
+  );
+
+  const tableRow = useMemo(
+    () => ({
+      hidden: reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 },
+      visible: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: 0.32, ease: [0.22, 1, 0.36, 1] },
+      },
+    }),
+    [reduceMotion],
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -240,8 +294,8 @@ export function UsersTab() {
 
   return (
     <div className="admin-users">
-      <div className="admin-users__stats">
-        <div className="admin-users__stat">
+      <Motion.div className="admin-users__stats" variants={listReveal} initial="hidden" animate="visible">
+        <Motion.div className="admin-users__stat" variants={statRise}>
           <span className="admin-users__stat-icon admin-users__stat-icon--blue" aria-hidden>
             ◎
           </span>
@@ -249,8 +303,8 @@ export function UsersTab() {
             <div className="admin-users__stat-value">{academyUsers}</div>
             <div className="admin-users__stat-label">Tài khoản học viện</div>
           </div>
-        </div>
-        <div className="admin-users__stat">
+        </Motion.div>
+        <Motion.div className="admin-users__stat" variants={statRise}>
           <span className="admin-users__stat-icon admin-users__stat-icon--green" aria-hidden>
             ✓
           </span>
@@ -258,8 +312,8 @@ export function UsersTab() {
             <div className="admin-users__stat-value">{activeCount}</div>
             <div className="admin-users__stat-label">Đang hoạt động</div>
           </div>
-        </div>
-        <div className="admin-users__stat">
+        </Motion.div>
+        <Motion.div className="admin-users__stat" variants={statRise}>
           <span className="admin-users__stat-icon admin-users__stat-icon--purple" aria-hidden>
             ★
           </span>
@@ -267,8 +321,8 @@ export function UsersTab() {
             <div className="admin-users__stat-value">{premiumCount}</div>
             <div className="admin-users__stat-label">Premium</div>
           </div>
-        </div>
-        <div className="admin-users__stat">
+        </Motion.div>
+        <Motion.div className="admin-users__stat" variants={statRise}>
           <span className="admin-users__stat-icon admin-users__stat-icon--blue" aria-hidden>
             +
           </span>
@@ -276,25 +330,22 @@ export function UsersTab() {
             <div className="admin-users__stat-value">{newCount}</div>
             <div className="admin-users__stat-label">Mới 7 ngày</div>
           </div>
-        </div>
-        <div className="admin-users__stat">
+        </Motion.div>
+        <Motion.div className="admin-users__stat" variants={statRise}>
           <span className="admin-users__stat-icon admin-users__stat-icon--amber" aria-hidden>
             !
           </span>
           <div>
             <div className="admin-users__stat-value">{pendingReports ?? '—'}</div>
-            <div className="admin-users__stat-label">Báo cáo chờ (API)</div>
+            <div className="admin-users__stat-label">Báo cáo chờ</div>
           </div>
-        </div>
-      </div>
+        </Motion.div>
+      </Motion.div>
 
       <div className="admin-users__panel">
         <div className="admin-users__panel-head">
           <div>
             <h3 className="admin-users__panel-title">Quản lý người dùng</h3>
-            <p className="admin-users__panel-sub">
-              Tìm kiếm, lọc theo vai trò / khóa / Premium / cấp độ. Chi tiết hồ sơ và cảnh cáo đều lấy trực tiếp từ API.
-            </p>
           </div>
           <div className="admin-users__toolbar">
             <label className="admin-users__search">
@@ -376,12 +427,12 @@ export function UsersTab() {
                   <th className="admin-users__th-actions">Thao tác</th>
                 </tr>
               </thead>
-              <tbody>
+              <Motion.tbody variants={tableReveal} initial="hidden" animate="visible">
                 {filtered.map((u) => {
                   const self = u.id === myId;
                   const level = u.levelId != null ? LEVEL_BY_ID[u.levelId] || `Lv.${u.levelId}` : '—';
                   return (
-                    <tr key={u.id} className={busyId === u.id ? 'admin-users__tr--busy' : ''}>
+                    <Motion.tr key={u.id} className={busyId === u.id ? 'admin-users__tr--busy' : ''} variants={tableRow}>
                       <td>
                         <div className="admin-users__person">
                           <span className="admin-users__avatar" aria-hidden>
@@ -440,10 +491,10 @@ export function UsersTab() {
                           </div>
                         )}
                       </td>
-                    </tr>
+                    </Motion.tr>
                   );
                 })}
-              </tbody>
+              </Motion.tbody>
             </table>
           )}
         </div>

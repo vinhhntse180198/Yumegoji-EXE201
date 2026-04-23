@@ -181,12 +181,11 @@ public class GameController : ControllerBase
 
     [HttpPost("inventory/use")]
     [Authorize(Policy = AuthPolicies.Member)]
-    public async Task<IActionResult> UsePowerUp([FromBody] UsePowerUpRequest req)
+    public async Task<ActionResult<UsePowerUpResultDto>> UsePowerUp([FromBody] UsePowerUpRequest req)
     {
         try
         {
-            await _game.UsePowerUpAsync(GetUserId(), req);
-            return NoContent();
+            return Ok(await _game.UsePowerUpAsync(GetUserId(), req));
         }
         catch (UnauthorizedAccessException)
         {

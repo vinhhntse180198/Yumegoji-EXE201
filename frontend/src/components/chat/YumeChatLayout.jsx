@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useCurrentUserId } from '../../hooks/useCurrentUserId';
@@ -9,7 +10,11 @@ import { chatService } from '../../services/chatService';
 import { socialService } from '../../services/socialService';
 import { ChatShellProvider } from '../../context/ChatShellProvider';
 import { useChatShell } from '../../hooks/useChatShell';
+import { SakuraRainLayer } from '../effects/SakuraRainLayer';
 import yumeLogo from '../../assets/yume-logo.png';
+
+/** Alias để ESLint nhận diện biến dùng qua JSX (giống SakuraRainLayer). */
+const Motion = motion;
 
 function safeArray(val) {
   return Array.isArray(val) ? val : [];
@@ -146,17 +151,17 @@ const DEMO_GROUPS_VISUAL = [
  * @param {string | number | null} [props.selectedRoomId]
  * @param {'full' | 'lobby'} [props.variant] — `lobby`: chỉ cột giữa (sảnh /chat), không sidebar trái/phải
  */
-export function MojiChatLayout({ children, selectedRoomId = null, variant = 'full' }) {
+export function YumeChatLayout({ children, selectedRoomId = null, variant = 'full' }) {
   return (
     <ChatShellProvider>
-      <MojiChatLayoutInner variant={variant} selectedRoomId={selectedRoomId}>
+      <YumeChatLayoutInner variant={variant} selectedRoomId={selectedRoomId}>
         {children}
-      </MojiChatLayoutInner>
+      </YumeChatLayoutInner>
     </ChatShellProvider>
   );
 }
 
-function MojiChatLayoutInner({ children, selectedRoomId = null, variant = 'full' }) {
+function YumeChatLayoutInner({ children, selectedRoomId = null, variant = 'full' }) {
   const navigate = useNavigate();
   const location = useLocation();
   const isChatLobby = /^\/chat\/?$/.test(location.pathname);
@@ -212,6 +217,61 @@ function MojiChatLayoutInner({ children, selectedRoomId = null, variant = 'full'
   const [sidebarBusyRoomId, setSidebarBusyRoomId] = useState(null);
   const sidebarListRef = useRef(null);
   const prevSelectedRoomIdRef = useRef(null);
+  const reduceMotion = useReducedMotion();
+  const mainPaneKey = `${location.pathname}::${selectedRoomId ?? ''}`;
+
+  const convListContainerVariants = useMemo(
+    () => ({
+      hidden: {},
+      visible: {
+        transition: {
+          staggerChildren: reduceMotion ? 0 : 0.042,
+          delayChildren: reduceMotion ? 0 : 0.04,
+        },
+      },
+    }),
+    [reduceMotion],
+  );
+
+  const convListItemVariants = useMemo(
+    () => ({
+      hidden: reduceMotion ? { opacity: 1, x: 0 } : { opacity: 0, x: -16 },
+      visible: {
+        opacity: 1,
+        x: 0,
+        transition: { duration: 0.32, ease: [0.16, 1, 0.3, 1] },
+      },
+    }),
+    [reduceMotion],
+  );
+
+  const pathAsideContainerVariants = useMemo(
+    () => ({
+      hidden: {},
+      visible: {
+        transition: {
+          staggerChildren: reduceMotion ? 0 : 0.08,
+          delayChildren: reduceMotion ? 0 : 0.06,
+        },
+      },
+    }),
+    [reduceMotion],
+  );
+
+  const pathAsideCardVariants = useMemo(
+    () => ({
+      hidden: reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 18 },
+      visible: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: 0.38, ease: [0.16, 1, 0.3, 1] },
+      },
+    }),
+    [reduceMotion],
+  );
+
+  const friendListContainerVariants = convListContainerVariants;
+  const friendListItemVariants = convListItemVariants;
 
   const displayName = user?.displayName || user?.username || user?.name || user?.email || 'Bạn';
   const handle = user?.username || user?.email?.split('@')[0] || 'user';
@@ -836,7 +896,7 @@ function MojiChatLayoutInner({ children, selectedRoomId = null, variant = 'full'
       );
 
       return (
-        <li key={g.id}>
+        <Motion.li key={g.id} variants={convListItemVariants}>
           {useMenu ? (
             <div className="moji-chat__conv-li-inner">
               {rowBtn}
@@ -883,7 +943,7 @@ function MojiChatLayoutInner({ children, selectedRoomId = null, variant = 'full'
           ) : (
             rowBtn
           )}
-        </li>
+        </Motion.li>
       );
     });
   }
@@ -954,19 +1014,6 @@ function MojiChatLayoutInner({ children, selectedRoomId = null, variant = 'full'
             <li>
               <button
                 type="button"
-                className={`moji-chat__primary-item ${primaryItemActive(shortcutRooms.ai) ? 'moji-chat__primary-item--active' : ''}`}
-                onClick={() => goPrimaryShortcut(shortcutRooms.ai)}
-              >
-                <span className="moji-chat__primary-item-ico" aria-hidden>
-                  🤖
-                </span>
-                <span className="moji-chat__primary-item-label">Yume AI</span>
-                {primaryUnreadPill(shortcutRooms.ai)}
-              </button>
-            </li>
-            <li>
-              <button
-                type="button"
                 className={`moji-chat__primary-item ${primaryItemActive(shortcutRooms.n5) ? 'moji-chat__primary-item--active' : ''}`}
                 onClick={() => goPrimaryShortcut(shortcutRooms.n5)}
               >
@@ -1018,21 +1065,23 @@ function MojiChatLayoutInner({ children, selectedRoomId = null, variant = 'full'
             </li>
           </ul>
         </div>
-        <div className="moji-chat__primary-cta-block">
-          <button type="button" className="moji-chat__primary-tutor-btn" onClick={() => goPrimaryShortcut(shortcutRooms.ai)}>
-            <span className="moji-chat__primary-tutor-ico" aria-hidden>
-              🤖
-            </span>
-            <span>Mở gia sư AI</span>
-          </button>
+        <div className="moji-chat__primary-cta-block moji-chat__primary-cta-block--compact">
           <button type="button" className="moji-chat__primary-new-link" onClick={handleCreateChat}>
             + Tin nhắn mới
           </button>
         </div>
 
         <div className="moji-chat__sidebar-unified__grow">
-        {navMode === 'messages' && (
-          <>
+          <AnimatePresence mode="wait">
+            {navMode === 'messages' ? (
+              <Motion.div
+                key="nav-messages"
+                className="moji-chat__sidebar-unified__grow-motion"
+                initial={reduceMotion ? false : { opacity: 0, x: -14 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={reduceMotion ? undefined : { opacity: 0, x: -12 }}
+                transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+              >
             <h2 className="moji-chat__panel2-title moji-chat__panel2-title--unified">Tin nhắn</h2>
             {sidebarNotice ? (
               <div className="moji-chat__sidebar-notice moji-chat__sidebar-notice--unified" role="status">
@@ -1096,7 +1145,14 @@ function MojiChatLayoutInner({ children, selectedRoomId = null, variant = 'full'
                           TRỢ LÝ
                         </h3>
                       </div>
-                      <ul className="moji-chat__conv-list">{renderConvListItems([assistantRowForList], { showMenu: true })}</ul>
+                      <Motion.ul
+                        className="moji-chat__conv-list"
+                        variants={convListContainerVariants}
+                        initial={reduceMotion ? false : 'hidden'}
+                        animate={reduceMotion ? false : 'visible'}
+                      >
+                        {renderConvListItems([assistantRowForList], { showMenu: true })}
+                      </Motion.ul>
                     </section>
                   ) : null}
                   <section className="moji-chat__conv-section" aria-labelledby="moji-sec-groups">
@@ -1119,7 +1175,14 @@ function MojiChatLayoutInner({ children, selectedRoomId = null, variant = 'full'
                         {inboxTab === 'unread' ? 'Không có phòng chưa đọc.' : 'Chưa có phòng nhóm.'}
                       </p>
                     ) : (
-                      <ul className="moji-chat__conv-list">{renderConvListItems(groupChatsRoomsOnly, { showMenu: true })}</ul>
+                      <Motion.ul
+                        className="moji-chat__conv-list"
+                        variants={convListContainerVariants}
+                        initial={reduceMotion ? false : 'hidden'}
+                        animate={reduceMotion ? false : 'visible'}
+                      >
+                        {renderConvListItems(groupChatsRoomsOnly, { showMenu: true })}
+                      </Motion.ul>
                     )}
                   </section>
                   <section className="moji-chat__conv-section" aria-labelledby="moji-sec-friends">
@@ -1142,16 +1205,29 @@ function MojiChatLayoutInner({ children, selectedRoomId = null, variant = 'full'
                         {inboxTab === 'unread' ? 'Không có chat riêng chưa đọc.' : 'Chưa có cuộc trò chuyện riêng.'}
                       </p>
                     ) : (
-                      <ul className="moji-chat__conv-list">{renderConvListItems(directChats)}</ul>
+                      <Motion.ul
+                        className="moji-chat__conv-list"
+                        variants={convListContainerVariants}
+                        initial={reduceMotion ? false : 'hidden'}
+                        animate={reduceMotion ? false : 'visible'}
+                      >
+                        {renderConvListItems(directChats)}
+                      </Motion.ul>
                     )}
                   </section>
                 </>
               )}
             </div>
-          </>
-        )}
-
-        {navMode === 'contacts' && (
+              </Motion.div>
+            ) : (
+              <Motion.div
+                key="nav-contacts"
+                className="moji-chat__sidebar-unified__grow-motion"
+                initial={reduceMotion ? false : { opacity: 0, x: -14 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={reduceMotion ? undefined : { opacity: 0, x: -12 }}
+                transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+              >
           <div className="moji-chat__list-scroll moji-chat__list-scroll--contacts">
             <div className="moji-chat__list-panel-head moji-chat__list-panel-head--flat">
               <span className="moji-chat__list-brand">Danh bạ</span>
@@ -1177,9 +1253,14 @@ function MojiChatLayoutInner({ children, selectedRoomId = null, variant = 'full'
             ) : friendRows.length === 0 ? (
               <p className="moji-chat__muted">Chưa có bạn bè. Bấm + để tìm và gửi lời mời.</p>
             ) : (
-              <ul className="moji-chat__friend-list">
+              <Motion.ul
+                className="moji-chat__friend-list"
+                variants={friendListContainerVariants}
+                initial={reduceMotion ? false : 'hidden'}
+                animate={reduceMotion ? false : 'visible'}
+              >
                 {friendRows.map((f) => (
-                  <li key={f.key}>
+                  <Motion.li key={f.key} variants={friendListItemVariants}>
                     <button
                       type="button"
                       className="moji-chat__friend-card moji-chat__friend-card--action"
@@ -1197,19 +1278,14 @@ function MojiChatLayoutInner({ children, selectedRoomId = null, variant = 'full'
                         <div className="moji-chat__friend-snippet">{f.snippet}</div>
                       </div>
                     </button>
-                  </li>
+                  </Motion.li>
                 ))}
-              </ul>
+              </Motion.ul>
             )}
           </div>
-        )}
-
-        {navMode === 'tasks' && (
-          <div className="moji-chat__list-placeholder">
-            <p className="moji-chat__list-brand">Việc cần làm</p>
-            <p className="moji-chat__muted">Tính năng đang phát triển — gắn với nhắc việc / deadline sau này.</p>
-          </div>
-        )}
+              </Motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         <div className="moji-chat__primary-foot">
@@ -1235,16 +1311,6 @@ function MojiChatLayoutInner({ children, selectedRoomId = null, variant = 'full'
               👥
             </span>
             <span>Bạn bè</span>
-          </button>
-          <button
-            type="button"
-            className={`moji-chat__primary-foot-btn ${navMode === 'tasks' ? 'moji-chat__primary-foot-btn--active' : ''}`}
-            onClick={() => setNavMode('tasks')}
-          >
-            <span className="moji-chat__primary-foot-ico" aria-hidden>
-              ✓
-            </span>
-            <span>Việc cần làm</span>
           </button>
           <button
             type="button"
@@ -1326,7 +1392,32 @@ function MojiChatLayoutInner({ children, selectedRoomId = null, variant = 'full'
         </>
       ) : null}
 
-      <section className={`moji-chat__main ${isLobbySolo ? 'moji-chat__main--solo' : ''}`}>{children}</section>
+      <section className={`moji-chat__main ${isLobbySolo ? 'moji-chat__main--solo' : ''}`}>
+        {!isLobbySolo ? (
+          <div className="moji-chat__main-sakura-wrap" aria-hidden>
+            <div className="moji-chat__main-sakura moji-chat__main-sakura--far">
+              <SakuraRainLayer petalCount={14} />
+            </div>
+            <div className="moji-chat__main-sakura moji-chat__main-sakura--mid">
+              <SakuraRainLayer petalCount={22} buoyant />
+            </div>
+          </div>
+        ) : null}
+        <div className="moji-chat__main-surface">
+          <AnimatePresence mode="wait">
+            <Motion.div
+              key={mainPaneKey}
+              className="moji-chat__main-motion"
+              initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={reduceMotion ? undefined : { opacity: 0, y: -14 }}
+              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {children}
+            </Motion.div>
+          </AnimatePresence>
+        </div>
+      </section>
 
       {!isLobbySolo && rightPanelOpen ? (
         <aside className="moji-chat__info-panel moji-chat__info-panel--path" aria-label="Thông tin hội thoại">
@@ -1365,63 +1456,70 @@ function MojiChatLayoutInner({ children, selectedRoomId = null, variant = 'full'
         </aside>
       ) : !isLobbySolo ? (
         <aside className="moji-chat__path-aside" aria-label="Tiến độ và tài liệu">
-          <div className="moji-chat__path-card moji-chat__path-card--profile">
-            <div className="moji-chat__path-profile-avatar" aria-hidden>
-              {avatarLetter}
-            </div>
-            <div className="moji-chat__path-profile-body">
-              <div className="moji-chat__path-profile-name">{displayName}</div>
-              <div className="moji-chat__path-profile-role">{roleHint}</div>
-              <p className="moji-chat__path-profile-tag">Lộ trình JLPT trên YumeGo-ji</p>
-            </div>
-            <button type="button" className="moji-chat__path-pill-btn" onClick={() => navigate(ROUTES.LEARN)}>
-              Ôn bài trên Học tập
-            </button>
-          </div>
-          <div className="moji-chat__path-card">
-            <div className="moji-chat__path-card-head">
-              <span className="moji-chat__path-card-title">Tiến độ gợi ý</span>
-              <span className="moji-chat__path-card-meta">minh họa</span>
-            </div>
-            <div className="moji-chat__path-progress-num">68%</div>
-            <div className="moji-chat__path-progress-bar" role="presentation">
-              <span className="moji-chat__path-progress-fill" style={{ width: '68%' }} />
-            </div>
-            <p className="moji-chat__path-card-desc">Tiếp tục hội thoại và phòng level để tăng độ nói và nghe.</p>
-          </div>
-          <div className="moji-chat__path-card">
-            <div className="moji-chat__path-card-head">
-              <span className="moji-chat__path-card-title">Tài liệu nhanh</span>
-              <button type="button" className="moji-chat__path-text-link" onClick={() => navigate(ROUTES.LEARN)}>
-                Xem tất cả
+          <Motion.div
+            className="moji-chat__path-aside-motion"
+            variants={pathAsideContainerVariants}
+            initial={reduceMotion ? false : 'hidden'}
+            animate={reduceMotion ? false : 'visible'}
+          >
+            <Motion.div className="moji-chat__path-card moji-chat__path-card--profile" variants={pathAsideCardVariants}>
+              <div className="moji-chat__path-profile-avatar" aria-hidden>
+                {avatarLetter}
+              </div>
+              <div className="moji-chat__path-profile-body">
+                <div className="moji-chat__path-profile-name">{displayName}</div>
+                <div className="moji-chat__path-profile-role">{roleHint}</div>
+                <p className="moji-chat__path-profile-tag">Lộ trình JLPT trên YumeGo-ji</p>
+              </div>
+              <button type="button" className="moji-chat__path-pill-btn" onClick={() => navigate(ROUTES.LEARN)}>
+                Ôn bài trên Học tập
               </button>
-            </div>
-            <div className="moji-chat__path-materials">
-              <button type="button" className="moji-chat__path-material-tile" onClick={() => navigate(ROUTES.LEARN)}>
-                <span className="moji-chat__path-material-ico" aria-hidden>
-                  📄
-                </span>
-                <span className="moji-chat__path-material-name">Bảng chữ Hiragana</span>
-              </button>
-              <button type="button" className="moji-chat__path-material-tile" onClick={() => navigate(ROUTES.LEARN)}>
-                <span className="moji-chat__path-material-ico" aria-hidden>
-                  📘
-                </span>
-                <span className="moji-chat__path-material-name">Ngữ pháp N5</span>
-              </button>
-            </div>
-          </div>
-          <div className="moji-chat__path-milestones" aria-label="Mốc minh họa">
-            <span className="moji-chat__path-milestone moji-chat__path-milestone--on" title="Đang học">
-              🔥
-            </span>
-            <span className="moji-chat__path-milestone moji-chat__path-milestone--on" title="Phòng đã tham gia">
-              🎓
-            </span>
-            <span className="moji-chat__path-milestone" title="Mở khóa sau">
-              🔒
-            </span>
-          </div>
+            </Motion.div>
+            <Motion.div className="moji-chat__path-card" variants={pathAsideCardVariants}>
+              <div className="moji-chat__path-card-head">
+                <span className="moji-chat__path-card-title">Tiến độ gợi ý</span>
+                <span className="moji-chat__path-card-meta">minh họa</span>
+              </div>
+              <div className="moji-chat__path-progress-num">68%</div>
+              <div className="moji-chat__path-progress-bar" role="presentation">
+                <span className="moji-chat__path-progress-fill" style={{ width: '68%' }} />
+              </div>
+              <p className="moji-chat__path-card-desc">Tiếp tục hội thoại và phòng level để tăng độ nói và nghe.</p>
+            </Motion.div>
+            <Motion.div className="moji-chat__path-card" variants={pathAsideCardVariants}>
+              <div className="moji-chat__path-card-head">
+                <span className="moji-chat__path-card-title">Tài liệu nhanh</span>
+                <button type="button" className="moji-chat__path-text-link" onClick={() => navigate(ROUTES.LEARN)}>
+                  Xem tất cả
+                </button>
+              </div>
+              <div className="moji-chat__path-materials">
+                <button type="button" className="moji-chat__path-material-tile" onClick={() => navigate(ROUTES.LEARN)}>
+                  <span className="moji-chat__path-material-ico" aria-hidden>
+                    📄
+                  </span>
+                  <span className="moji-chat__path-material-name">Bảng chữ Hiragana</span>
+                </button>
+                <button type="button" className="moji-chat__path-material-tile" onClick={() => navigate(ROUTES.LEARN)}>
+                  <span className="moji-chat__path-material-ico" aria-hidden>
+                    📘
+                  </span>
+                  <span className="moji-chat__path-material-name">Ngữ pháp N5</span>
+                </button>
+              </div>
+            </Motion.div>
+            <Motion.div className="moji-chat__path-milestones" variants={pathAsideCardVariants} aria-label="Mốc minh họa">
+              <span className="moji-chat__path-milestone moji-chat__path-milestone--on" title="Đang học">
+                🔥
+              </span>
+              <span className="moji-chat__path-milestone moji-chat__path-milestone--on" title="Phòng đã tham gia">
+                🎓
+              </span>
+              <span className="moji-chat__path-milestone" title="Mở khóa sau">
+                🔒
+              </span>
+            </Motion.div>
+          </Motion.div>
         </aside>
       ) : null}
 

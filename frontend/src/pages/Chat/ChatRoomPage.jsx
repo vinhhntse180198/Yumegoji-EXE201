@@ -4,7 +4,7 @@ import { chatService } from '../../services/chatService';
 import { startChatRoomConnection } from '../../services/chatRealtime';
 import { useAuth } from '../../hooks/useAuth';
 import { useCurrentUserId } from '../../hooks/useCurrentUserId';
-import { MojiChatLayout } from '../../components/chat/MojiChatLayout';
+import { YumeChatLayout } from '../../components/chat/YumeChatLayout';
 import { useChatShell } from '../../hooks/useChatShell';
 import { ROUTES } from '../../data/routes';
 import { notifyChatInboxRevised } from '../../hooks/useChatUnreadTotal';
@@ -556,7 +556,7 @@ export default function ChatRoomPage() {
         if (member) {
           const last = parsed.items.length > 0 ? parsed.items[parsed.items.length - 1] : null;
           const lid = last ? last.id ?? last.Id : null;
-          /** Chờ read + bump xong trước khi tắt loading — tránh remount MojiChatLayout làm mất ChatShellContext và không refetch sidebar. */
+          /** Chờ read + bump xong trước khi tắt loading — tránh remount YumeChatLayout làm mất ChatShellContext và không refetch sidebar. */
           await markReadAndSyncSidebar(roomId, lid, member);
         }
         if (!cancelled) {
@@ -1181,7 +1181,7 @@ export default function ChatRoomPage() {
   const pinnedPreview = messages.find((m) => m.isPinned);
 
   return (
-    <MojiChatLayout selectedRoomId={roomId}>
+    <YumeChatLayout selectedRoomId={roomId}>
       {loading ? (
         <div className="moji-chat__room moji-chat__room--loading">
           <div className="moji-chat__empty" role="status" aria-live="polite">
@@ -1877,6 +1877,6 @@ export default function ChatRoomPage() {
         </div>
       </div>
       )}
-    </MojiChatLayout>
+    </YumeChatLayout>
   );
 }

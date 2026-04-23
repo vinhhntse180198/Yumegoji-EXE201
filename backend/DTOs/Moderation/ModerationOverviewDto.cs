@@ -13,6 +13,9 @@ public class ModerationOverviewDto
     public int RegisteredLearnersCount { get; set; }
 
     public List<ModerationDailyBucketDto> Trend { get; set; } = new();
+
+    /// <summary>3 tháng dương lịch gần nhất (tháng hiện tại + 2 tháng trước), luôn có đủ 3 phần tử.</summary>
+    public List<ModerationMonthlyBucketDto> MonthlyTrend { get; set; } = new();
 }
 
 public class ModerationDailyBucketDto

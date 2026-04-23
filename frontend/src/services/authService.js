@@ -14,8 +14,14 @@ const NEEDS_PLACEMENT_KEY = 'needs_placement_test';
 function normalizeUserShape(user) {
   if (!user || typeof user !== 'object') return user;
   const id = user.id ?? user.userId ?? user.Id ?? user.UserId;
-  if (id == null) return user;
-  return { ...user, id, userId: id };
+  const roleRaw = user.role ?? user.Role;
+  const role = roleRaw != null && roleRaw !== '' ? String(roleRaw) : user.role;
+  const next = id == null ? { ...user } : { ...user, id, userId: id };
+  if (roleRaw != null && roleRaw !== '') {
+    next.role = role;
+    next.Role = role;
+  }
+  return next;
 }
 
 /** JWT (AuthService) gán claim `sub` = user.Id — dùng khi localStorage thiếu user.id (tránh mọi tin bị coi là người khác). */
@@ -37,6 +43,40 @@ function parseJwtUserId(token) {
     if (raw == null || raw === '') return null;
     const n = Number(raw);
     return Number.isFinite(n) ? n : null;
+  } catch {
+    return null;
+  }
+}
+
+const JWT_ROLE_URI = 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role';
+
+/** Claim role trong JWT — hỗ trợ camelCase, URI đầy đủ, và quét key kết thúc bằng /role. */
+function parseJwtRole(token) {
+  if (!token || typeof token !== 'string') return null;
+  try {
+    const parts = token.split('.');
+    if (parts.length < 2) return null;
+    let b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const pad = b64.length % 4;
+    if (pad) b64 += '='.repeat(4 - pad);
+    const decodeB64 = globalThis['atob'];
+    if (typeof decodeB64 !== 'function') return null;
+    const payload = JSON.parse(decodeB64(b64));
+    const direct = [payload.role, payload.Role, payload[JWT_ROLE_URI]];
+    for (const c of direct) {
+      if (c == null || c === '') continue;
+      let r = c;
+      if (Array.isArray(r)) r = r.find((x) => x != null && String(x).trim() !== '') ?? r[0];
+      if (r != null && String(r).trim() !== '') return String(r);
+    }
+    for (const key of Object.keys(payload)) {
+      if (key === 'role' || key === 'Role' || /\/role$/i.test(key)) {
+        let r = payload[key];
+        if (Array.isArray(r)) r = r.find((x) => x != null && String(x).trim() !== '') ?? r[0];
+        if (r != null && String(r).trim() !== '') return String(r);
+      }
+    }
+    return null;
   } catch {
     return null;
   }
@@ -141,6 +181,25 @@ export const authService = {
   /** Chỉ đọc `sub` / nameidentifier từ JWT — đúng với mọi request có Bearer token. */
   getJwtUserId() {
     return parseJwtUserId(storage.get(TOKEN_KEY));
+  },
+
+  /** Khi object user trong storage thiếu role (bản cũ), đọc từ JWT. */
+  getRoleFromStoredToken() {
+    return parseJwtRole(storage.get(TOKEN_KEY));
+  },
+
+  /**
+   * Khi object user trong storage thiếu role (JSON cũ / lệch deserialize), đồng bộ từ JWT và ghi lại storage.
+   */
+  mergeUserWithRoleFromToken(user) {
+    const u = normalizeUserShape(user || {});
+    const existing = u?.role ?? u?.Role;
+    if (existing != null && String(existing).trim() !== '') return u;
+    const fromJwt = parseJwtRole(storage.get(TOKEN_KEY));
+    if (!fromJwt) return u;
+    const next = { ...u, role: fromJwt, Role: fromJwt };
+    storage.set(USER_KEY, normalizeUserShape(next));
+    return normalizeUserShape(next);
   },
 
   /**

@@ -16,7 +16,10 @@ public record SubmitAnswerRequest(
     int? ResponseMs,
     string? PowerUpUsed);
 
-public record UsePowerUpRequest(int SessionId, string PowerUpSlug);
+public record UsePowerUpRequest(int SessionId, string PowerUpSlug, int? QuestionId = null);
+
+/// <summary>Kết quả dùng vật phẩm trong phiên. Với 50:50, server trả về chỉ số đáp án sai cần ẩn (đã trừ túi).</summary>
+public record UsePowerUpResultDto(IReadOnlyList<int>? HiddenOptionIndices);
 
 public record PurchasePowerUpRequest(string PowerUpSlug, int Quantity = 1);
 
