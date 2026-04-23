@@ -210,6 +210,8 @@ export function OverviewTab() {
   }, [days]);
 
   const chartMonthly = days === 90;
+  /** Trục X theo thứ (T2…CN) cho 7 và 30 ngày. */
+  const weekAxisDaily = !chartMonthly && (days === 7 || days === 30);
 
   const chartPoints = useMemo(() => {
     const daily = normalizeTrendRows(data?.trend ?? data?.Trend);
@@ -234,10 +236,11 @@ export function OverviewTab() {
   }, [chartPoints]);
 
   const useWideChart = !chartMonthly && chartPoints.length > 14;
-  const labelStep = useMemo(
-    () => (chartMonthly ? 1 : labelStepForCount(chartPoints.length)),
-    [chartMonthly, chartPoints.length],
-  );
+  const labelStep = useMemo(() => {
+    if (chartMonthly) return 1;
+    if (days === 7 || days === 30) return 1;
+    return labelStepForCount(chartPoints.length);
+  }, [chartMonthly, days, chartPoints.length]);
 
   const sortedActivities = useMemo(() => {
     const rows = recentReports.map((rep) => ({ rep, act: mapReportToActivity(rep) }));
@@ -318,7 +321,7 @@ export function OverviewTab() {
             role="presentation"
           >
             <div
-              className={`mod-dash__trend-chart ${useWideChart ? 'mod-dash__trend-chart--wide' : ''} ${chartMonthly ? 'mod-dash__trend-chart--monthly' : ''}`}
+              className={`mod-dash__trend-chart ${useWideChart ? 'mod-dash__trend-chart--wide' : ''} ${chartMonthly ? 'mod-dash__trend-chart--monthly' : ''} ${days === 30 && !chartMonthly ? 'mod-dash__trend-chart--30d-wk' : ''}`}
               role="img"
               aria-label={chartMonthly ? 'Biểu đồ báo cáo theo tháng' : 'Biểu đồ báo cáo theo ngày'}
             >
@@ -330,12 +333,14 @@ export function OverviewTab() {
                 const showDateLabel = chartMonthly || idx % labelStep === 0 || idx === chartPoints.length - 1;
                 const xLabel = chartMonthly
                   ? t.monthLabel || t.date
-                  : days === 7
+                  : weekAxisDaily
                     ? weekdayLabelFromYmd(t.date)
                     : formatDayLabel(t.date);
                 const dayTitle = chartMonthly
                   ? `${t.monthLabel}: mới ${c}, đóng ${r}`
-                  : `${t.date}: mới ${c}, đóng ${r}`;
+                  : weekAxisDaily
+                    ? `${weekdayLabelFromYmd(t.date)} · ${t.date}: mới ${c}, đóng ${r}`
+                    : `${t.date}: mới ${c}, đóng ${r}`;
                 return (
                   <div
                     key={t.key}

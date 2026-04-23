@@ -256,9 +256,6 @@ export function ReportsTab() {
       <div className="mod-dash__panel-head mod-dash__panel-head--row">
         <div>
           <h2 className="mod-dash__panel-title">Quản lý báo cáo &amp; xử lý vi phạm</h2>
-          <p className="mod-dash__panel-desc">
-            Lọc theo loại / mức độ / trạng thái; xem chi tiết nội dung, lịch sử cảnh cáo, cảnh báo, mute, xóa tin, đề xuất Admin, ghi chú nội bộ.
-          </p>
         </div>
         <button type="button" className="mod-dash__btn mod-dash__btn--ghost" onClick={loadFromApi} disabled={loading}>
           ⟳ Tải lại
@@ -296,16 +293,6 @@ export function ReportsTab() {
             ))}
           </select>
         </label>
-        <span className="mod-dash__filter-meta">
-          Nguồn:{' '}
-          <strong>
-            {source === 'api'
-              ? 'API · GET /api/Moderation/staff/reports'
-              : source === 'error'
-                ? 'Lỗi tải'
-                : '—'}
-          </strong>
-        </span>
       </div>
 
       {apiErr ? (

@@ -279,9 +279,10 @@ public class ModerationService : IModerationService
     {
         var firstOfThisMonth = new DateTime(todayUtc.Year, todayUtc.Month, 1, 0, 0, 0, DateTimeKind.Utc);
         var startMonth = firstOfThisMonth.AddMonths(-2);
-        var buckets = new ModerationMonthlyBucketDto[3];
+        var list = new List<ModerationMonthlyBucketDto>(3);
 
-        async Task FillMonthAsync(int i)
+        // Không dùng Task.WhenAll: DbContext không thread-safe — song song gây lỗi 500.
+        for (var i = 0; i < 3; i++)
         {
             var monthStart = startMonth.AddMonths(i);
             var monthEnd = monthStart.AddMonths(1);
@@ -293,17 +294,16 @@ public class ModerationService : IModerationService
                     r.ResolvedAt.Value >= monthStart &&
                     r.ResolvedAt.Value < monthEnd &&
                     (r.Status == "resolved" || r.Status == "dismissed"));
-            buckets[i] = new ModerationMonthlyBucketDto
+            list.Add(new ModerationMonthlyBucketDto
             {
                 MonthKey = monthStart.ToString("yyyy-MM"),
                 MonthLabel = $"Tháng {monthStart.Month}",
                 ReportsCreated = reportsCreated,
                 ReportsResolved = reportsResolved
-            };
+            });
         }
 
-        await Task.WhenAll(FillMonthAsync(0), FillMonthAsync(1), FillMonthAsync(2));
-        return buckets.ToList();
+        return list;
     }
 
     public async Task<IReadOnlyList<StaffLearnerRowDto>> GetLearnersForStaffAsync(int limit)

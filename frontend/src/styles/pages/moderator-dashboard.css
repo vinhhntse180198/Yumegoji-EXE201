@@ -1147,6 +1147,23 @@ html[data-theme='dark'] .mod-dash__inline-hint--warn {
   font-weight: 700;
 }
 
+/* 30 ngày: nhãn T2…CN, không cắt ellipsis trong cột hẹp */
+.mod-dash__trend-chart--30d-wk.mod-dash__trend-chart--wide .mod-dash__trend-col--fixed {
+  width: 30px;
+  min-width: 30px;
+}
+
+.mod-dash__trend-chart--30d-wk .mod-dash__trend-col--fixed .mod-dash__trend-date {
+  max-width: none;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  text-align: center;
+  font-size: 0.58rem;
+  line-height: 1.1;
+  word-break: keep-all;
+}
+
 .mod-dash__inline-hint {
   margin-top: 0.5rem;
   font-size: 0.8rem;
