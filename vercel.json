@@ -3,6 +3,7 @@
   "buildCommand": "npm run build --prefix frontend",
   "outputDirectory": "frontend/dist",
   "rewrites": [
+    { "handle": "filesystem" },
     {
       "source": "/((?!api/|hubs/|uploads/).*)",
       "destination": "/index.html"
